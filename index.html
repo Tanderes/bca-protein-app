@@ -464,6 +464,12 @@
       <label>Std concentrations (µg/mL)</label>
       <input id="cfgStds" type="text" value="2000,1500,1000,750,500,250,125,25,0" style="width:260px;font-size:11px;"/>
     </div>
+    <div class="config-sep"></div>
+    <div class="config-item">
+      <label>Parent strain</label>
+      <input id="cfgParent" type="text" value="Y293" style="width:90px;" placeholder="e.g. Y293"
+             title="Sets the dashed reference line and grey colour on the box plot"/>
+    </div>
     <button class="run-btn" id="runBtn" onclick="runAnalysis()" disabled>
       <span id="runLabel">Run analysis</span>
     </button>
@@ -486,10 +492,9 @@
           <canvas id="stdChart" role="img" aria-label="BCA standard curve scatter plot with linear fit"></canvas>
         </div>
       </div>
-      <div class="chart-card">
-        <h3>Protein concentration by sample</h3>
-        <div id="boxChartWrap" style="position:relative;overflow-y:auto;"></div>
-      </div>
+    </div>
+    <div class="chart-card" style="margin-bottom:28px;">
+      <div id="boxChartWrap" style="position:relative;overflow-x:auto;"></div>
     </div>
 
     <div class="section-title">Summary table</div>
@@ -804,114 +809,200 @@ function renderResults(dilution) {
     </tr>`).join('');
 }
 
-// ── Box plot (SVG) ─────────────────────────────────────────────────────────────
+// ── Vertical box plot (SVG) ────────────────────────────────────────────────────
 function renderBoxPlot() {
-  // Gather per-well values per sample
+  const parentStrain = (document.getElementById('cfgParent').value || '').trim();
+  const dateStr = today();
+
+  // ── 1. Build per-sample value map ──────────────────────────────────────────
   const groupMap = {};
   stdCurveData.wellResults.forEach(w => {
     if (!groupMap[w.sample]) groupMap[w.sample] = [];
     groupMap[w.sample].push(w.conc);
   });
 
-  // Sort by median descending
-  const groups = Object.entries(groupMap).map(([sample, vals]) => {
-    const sorted = [...vals].sort((a,b)=>a-b);
-    const n = sorted.length;
-    const q1  = sorted[Math.floor((n-1)*0.25)];
-    const med = n%2===0 ? (sorted[n/2-1]+sorted[n/2])/2 : sorted[(n-1)/2];
-    const q3  = sorted[Math.floor((n-1)*0.75)];
-    const iqr = q3-q1;
-    const lo  = Math.max(sorted[0], q1 - 1.5*iqr);
-    const hi  = Math.min(sorted[n-1], q3 + 1.5*iqr);
-    const mean = vals.reduce((a,b)=>a+b,0)/n;
-    const sd  = n>1 ? Math.sqrt(vals.reduce((a,v)=>a+(v-mean)**2,0)/(n-1)):0;
-    const cv  = mean ? sd/mean*100 : 0;
-    const outliers = sorted.filter(v => v < lo || v > hi);
-    return { sample, vals: sorted, q1, med, q3, lo, hi, mean, sd, cv, outliers };
-  }).sort((a,b) => b.med - a.med);
+  // ── 2. Natural sort all sample names, then put parent first ───────────────
+  function naturalKey(s) {
+    // Split into alpha/numeric chunks for proper natural sort
+    return s.replace(/(\d+)/g, n => n.padStart(10, '0'));
+  }
+  const allSamples = Object.keys(groupMap);
+  const sorted = [...allSamples].sort((a, b) => naturalKey(a).localeCompare(naturalKey(b)));
+  // Parent goes first; everything else in natural order
+  const ordered = [
+    ...sorted.filter(s => s === parentStrain),
+    ...sorted.filter(s => s !== parentStrain),
+  ];
 
-  const allVals = groups.flatMap(g => g.vals);
-  const xMin = Math.floor(Math.min(...allVals)/50)*50;
-  const xMax = Math.ceil(Math.max(...allVals)/50)*50;
-
-  const rowH  = 34;
-  const padL  = 148; // label area
-  const padR  = 20;
-  const padT  = 32;
-  const padB  = 36;
-  const W     = 520;
-  const plotW = W - padL - padR;
-  const H     = padT + groups.length * rowH + padB;
-
-  const toX = v => padL + ((v - xMin) / (xMax - xMin)) * plotW;
-
-  // Grid lines + x-axis ticks
-  const tickCount = 6;
-  const tickStep  = (xMax - xMin) / (tickCount - 1);
-  let gridLines = '';
-  let xLabels   = '';
-  for (let i = 0; i < tickCount; i++) {
-    const v = xMin + i * tickStep;
-    const x = toX(v);
-    gridLines += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${H-padB}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
-    xLabels   += `<text x="${x}" y="${H-padB+16}" text-anchor="middle" fill="#7a82a0" font-size="10" font-family="DM Mono, monospace">${Math.round(v)}</text>`;
+  // ── 3. Classify group for colouring ───────────────────────────────────────
+  // Detect c1 / c2 suffix generically (e.g. ",c1", "_c1", "-c1", " c1")
+  function classifyGroup(name) {
+    if (name === parentStrain) return 'parent';
+    if (/[,_\- ]c1$/i.test(name)) return 'c1';
+    if (/[,_\- ]c2$/i.test(name)) return 'c2';
+    return 'other';
   }
 
-  // X-axis label
-  const xAxisLabel = `<text x="${padL + plotW/2}" y="${H-2}" text-anchor="middle" fill="#7a82a0" font-size="10" font-family="DM Mono, monospace">Protein (µg/mL)</text>`;
-
-  // Boxes
-  let boxes = '';
-  groups.forEach((g, i) => {
-    const cy   = padT + i * rowH + rowH/2;
-    const boxH = 14;
-    const flagged = g.cv > 10;
-    const boxColor  = flagged ? 'rgba(245,166,35,0.55)' : 'rgba(79,142,247,0.55)';
-    const lineColor = flagged ? '#f5a623' : '#4f8ef7';
-    const medColor  = flagged ? '#f5a623' : '#3dd6a3';
-
-    // Whisker line
-    boxes += `<line x1="${toX(g.lo)}" y1="${cy}" x2="${toX(g.hi)}" y2="${cy}" stroke="${lineColor}" stroke-width="1.5" opacity="0.6"/>`;
-    // Whisker caps
-    boxes += `<line x1="${toX(g.lo)}" y1="${cy-5}" x2="${toX(g.lo)}" y2="${cy+5}" stroke="${lineColor}" stroke-width="1.5"/>`;
-    boxes += `<line x1="${toX(g.hi)}" y1="${cy-5}" x2="${toX(g.hi)}" y2="${cy+5}" stroke="${lineColor}" stroke-width="1.5"/>`;
-    // IQR box
-    boxes += `<rect x="${toX(g.q1)}" y="${cy-boxH/2}" width="${toX(g.q3)-toX(g.q1)}" height="${boxH}" fill="${boxColor}" stroke="${lineColor}" stroke-width="1.5" rx="2"/>`;
-    // Median line
-    boxes += `<line x1="${toX(g.med)}" y1="${cy-boxH/2}" x2="${toX(g.med)}" y2="${cy+boxH/2}" stroke="${medColor}" stroke-width="2"/>`;
-    // Mean diamond
-    const dx = 4;
-    boxes += `<polygon points="${toX(g.mean)},${cy-dx} ${toX(g.mean)+dx},${cy} ${toX(g.mean)},${cy+dx} ${toX(g.mean)-dx},${cy}" fill="none" stroke="${medColor}" stroke-width="1.2" opacity="0.8"/>`;
-    // Outlier dots
-    g.outliers.forEach(ov => {
-      boxes += `<circle cx="${toX(ov)}" cy="${cy}" r="3" fill="none" stroke="${flagged?'#f5a623':'#4f8ef7'}" stroke-width="1.5"/>`;
-    });
-    // Label
-    const labelX = padL - 8;
-    boxes += `<text x="${labelX}" y="${cy+4}" text-anchor="end" fill="${flagged ? '#f5a623' : '#e8eaf2'}" font-size="11" font-family="DM Sans, sans-serif">${g.sample}</text>`;
-
-    // Tooltip rect (invisible, for title)
-    const tip = `n=${g.vals.length} | med=${g.med.toFixed(1)} | Q1=${g.q1.toFixed(1)} Q3=${g.q3.toFixed(1)} | CV=${g.cv.toFixed(1)}%`;
-    boxes += `<rect x="${toX(g.lo)-2}" y="${cy-rowH/2}" width="${toX(g.hi)-toX(g.lo)+4}" height="${rowH}" fill="transparent"><title>${tip}</title></rect>`;
+  // ── 4. Compute box stats per sample ───────────────────────────────────────
+  const groups = ordered.map(sample => {
+    const vals = [...groupMap[sample]].sort((a, b) => a - b);
+    const n = vals.length;
+    const q1  = vals[Math.floor((n - 1) * 0.25)];
+    const med = n % 2 === 0 ? (vals[n/2-1] + vals[n/2]) / 2 : vals[(n-1)/2];
+    const q3  = vals[Math.floor((n - 1) * 0.75)];
+    const iqr = q3 - q1;
+    const lo  = Math.max(vals[0],    q1 - 1.5 * iqr);
+    const hi  = Math.min(vals[n-1],  q3 + 1.5 * iqr);
+    const mean = vals.reduce((a, b) => a + b, 0) / n;
+    const sd   = n > 1 ? Math.sqrt(vals.reduce((a, v) => a + (v - mean) ** 2, 0) / (n - 1)) : 0;
+    const cv   = mean ? (sd / mean) * 100 : 0;
+    const outliers = vals.filter(v => v < lo || v > hi);
+    return { sample, vals, n, q1, med, q3, lo, hi, mean, sd, cv, outliers, grp: classifyGroup(sample) };
   });
 
-  // Legend
-  const legY = padT - 14;
-  const legend = `
-    <rect x="${padL}" y="${legY-8}" width="10" height="10" rx="1" fill="rgba(79,142,247,0.55)" stroke="#4f8ef7" stroke-width="1.2"/>
-    <text x="${padL+14}" y="${legY}" fill="#7a82a0" font-size="9" font-family="DM Mono, monospace">IQR box</text>
-    <line x1="${padL+68}" y1="${legY-4}" x2="${padL+80}" y2="${legY-4}" stroke="#3dd6a3" stroke-width="2"/>
-    <text x="${padL+84}" y="${legY}" fill="#7a82a0" font-size="9" font-family="DM Mono, monospace">median</text>
-    <polygon points="${padL+138},${legY-6} ${padL+142},${legY-2} ${padL+138},${legY+2} ${padL+134},${legY-2}" fill="none" stroke="#3dd6a3" stroke-width="1.2"/>
-    <text x="${padL+148}" y="${legY}" fill="#7a82a0" font-size="9" font-family="DM Mono, monospace">mean</text>
-    <rect x="${padL+188}" y="${legY-8}" width="10" height="10" rx="1" fill="rgba(245,166,35,0.55)" stroke="#f5a623" stroke-width="1.2"/>
-    <text x="${padL+202}" y="${legY}" fill="#7a82a0" font-size="9" font-family="DM Mono, monospace">CV &gt; 10%</text>
-  `;
+  // ── 5. Reference line from parent median ──────────────────────────────────
+  const parentGroup = groups.find(g => g.sample === parentStrain);
+  const refVal = parentGroup ? parentGroup.med : null;
 
-  const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg" style="display:block;">${gridLines}${boxes}${xLabels}${xAxisLabel}${legend}</svg>`;
+  // ── 6. Colour palette (grp → colours) ─────────────────────────────────────
+  const COLORS = {
+    parent: { fill: 'rgba(155,155,165,0.38)', stroke: '#9b9ba5', dot: '#c4c4cc' },
+    c1:     { fill: 'rgba(79,142,247,0.40)',  stroke: '#4f8ef7', dot: '#7ab0f8' },
+    c2:     { fill: 'rgba(61,214,163,0.35)',  stroke: '#3dd6a3', dot: '#5ee8bb' },
+    other:  { fill: 'rgba(245,166,35,0.42)',  stroke: '#f5a623', dot: '#f7c86a' },
+  };
+
+  // ── 7. Y-axis range: generous padding so dots never clip ──────────────────
+  const allVals = groups.flatMap(g => g.vals);
+  const rawMin = Math.min(...allVals);
+  const rawMax = Math.max(...allVals);
+  const span   = rawMax - rawMin;
+  const yPad   = Math.max(span * 0.22, 60);   // at least 60 µg/mL headroom each side
+  const yMin   = Math.floor((rawMin - yPad) / 50) * 50;
+  const yMax   = Math.ceil ((rawMax + yPad) / 50) * 50;
+
+  // ── 8. SVG layout constants ────────────────────────────────────────────────
+  const colW  = 52;    // wider columns → more breathing room
+  const padL  = 58;    // y-axis area
+  const padR  = 24;
+  const padT  = 96;    // title + legend + subtitle
+  const padB  = 80;    // rotated x-labels
+  const plotH = 300;   // slightly shorter for wider feel
+  const N     = groups.length;
+  const W     = padL + N * colW + padR;
+  const H     = padT + plotH + padB;
+
+  const toY = v => padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
+  const cx  = i => padL + i * colW + colW / 2;
+
+  // ── 9. Grid & axes ────────────────────────────────────────────────────────
+  const tickStep = 50;
+  let grid = '', yLabels = '';
+  for (let v = yMin; v <= yMax; v += tickStep) {
+    const y = toY(v);
+    grid    += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
+    yLabels += `<text x="${padL-7}" y="${y+4}" text-anchor="end" fill="#7a82a0" font-size="10" font-family="DM Mono,monospace">${v}</text>`;
+  }
+  grid += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+plotH}" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>`;
+  grid += `<line x1="${padL}" y1="${padT+plotH}" x2="${W-padR}" y2="${padT+plotH}" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>`;
+
+  const yAxisLabel = `<text transform="rotate(-90)" x="${-(padT+plotH/2)}" y="14" text-anchor="middle" fill="#7a82a0" font-size="11" font-family="DM Mono,monospace">Protein (µg/mL)</text>`;
+
+  // ── 10. Parent median dashed reference line ────────────────────────────────
+  let refLine = '';
+  if (refVal !== null) {
+    const ry = toY(refVal);
+    refLine = `<line x1="${padL}" y1="${ry}" x2="${W-padR}" y2="${ry}" stroke="#aaaaaa" stroke-width="1.3" stroke-dasharray="6,4" opacity="0.65"/>`;
+  }
+
+  // ── 11. Boxes, dots, labels ───────────────────────────────────────────────
+  const BHW  = 14;   // box half-width
+  const JITTER = [-4, 0, 4, -7, 7, -2, 2, -5, 5, 1, -1, 6, -6, 3, -3];
+  let boxes = '', xLabels = '';
+
+  groups.forEach((g, i) => {
+    const x = cx(i);
+    const C = COLORS[g.grp] || COLORS.other;
+
+    // Whisker spine
+    boxes += `<line x1="${x}" y1="${toY(g.hi)}" x2="${x}" y2="${toY(g.lo)}" stroke="${C.stroke}" stroke-width="1.4" opacity="0.5"/>`;
+    // Whisker caps
+    [g.lo, g.hi].forEach(v => {
+      boxes += `<line x1="${x-6}" y1="${toY(v)}" x2="${x+6}" y2="${toY(v)}" stroke="${C.stroke}" stroke-width="1.4"/>`;
+    });
+    // IQR box
+    const bTop = toY(g.q3), bBot = toY(g.q1);
+    boxes += `<rect x="${x-BHW}" y="${bTop}" width="${BHW*2}" height="${Math.max(bBot-bTop,1)}" fill="${C.fill}" stroke="${C.stroke}" stroke-width="1.5" rx="2"/>`;
+    // Median line
+    boxes += `<line x1="${x-BHW}" y1="${toY(g.med)}" x2="${x+BHW}" y2="${toY(g.med)}" stroke="${C.stroke}" stroke-width="2.2"/>`;
+
+    // Individual replicate dots (jittered)
+    g.vals.forEach((v, vi) => {
+      const jx = x + JITTER[vi % JITTER.length];
+      boxes += `<circle cx="${jx}" cy="${toY(v)}" r="3" fill="${C.dot}" opacity="0.88"/>`;
+    });
+
+    // Outlier rings
+    g.outliers.forEach(v => {
+      boxes += `<circle cx="${x}" cy="${toY(v)}" r="4.5" fill="none" stroke="${C.stroke}" stroke-width="1.5"/>`;
+    });
+
+    // Hover tooltip
+    const tip = `${g.sample}\nn = ${g.n}  |  median = ${g.med.toFixed(1)} µg/mL\nQ1 = ${g.q1.toFixed(1)}   Q3 = ${g.q3.toFixed(1)}\nCV = ${g.cv.toFixed(1)}%`;
+    boxes += `<rect x="${x-colW/2}" y="${padT}" width="${colW}" height="${plotH}" fill="transparent"><title>${tip}</title></rect>`;
+
+    // X-axis label — strip common parent prefix for readability
+    const lbl = parentStrain ? g.sample.replace(parentStrain + '+', '') : g.sample;
+    const lblColor = g.grp === 'parent' ? '#9b9ba5' : g.cv > 10 ? '#f5a623' : '#c8cce0';
+    xLabels += `<text transform="rotate(-40,${x},${padT+plotH+10})" x="${x}" y="${padT+plotH+10}" text-anchor="end" fill="${lblColor}" font-size="10" font-family="DM Sans,sans-serif">${lbl}</text>`;
+  });
+
+  // ── 12. Legend + title ────────────────────────────────────────────────────
+  // Build legend entries dynamically from groups actually present
+  const grpsPresent = [...new Set(groups.map(g => g.grp))];
+  const LEG_DEFS = {
+    parent: g => `${g.sample} (parent)`,
+    c1:     _  => 'Colony 1',
+    c2:     _  => 'Colony 2',
+    other:  _  => 'Other strains',
+  };
+  const legEntries = [];
+  grpsPresent.forEach(grp => {
+    const ex = groups.find(g => g.grp === grp);
+    legEntries.push({ grp, label: LEG_DEFS[grp] ? LEG_DEFS[grp](ex) : grp });
+  });
+  // Always add dashed ref line entry if parent exists
+  if (parentGroup) legEntries.push({ grp: '__ref__', label: `${parentStrain} median` });
+
+  const legX = padL, legY0 = 14;
+  let legend = '';
+  legend += `<text x="${legX}" y="${legY0}" font-size="13" font-weight="600" fill="#e8eaf2" font-family="DM Sans,sans-serif">Protein concentration by strain — BCA ${dateStr}</text>`;
+  legend += `<text x="${legX}" y="${legY0+17}" font-size="9.5" fill="#7a82a0" font-family="DM Mono,monospace">Box = IQR, line = median, whiskers = min/max, dots = individual replicates${parentGroup ? `. Dashed = ${parentStrain} median.` : '.'}</text>`;
+
+  let lx = legX;
+  legEntries.forEach(entry => {
+    if (entry.grp === '__ref__') {
+      // Dashed line swatch
+      legend += `<line x1="${lx}" y1="${legY0+35}" x2="${lx+22}" y2="${legY0+35}" stroke="#aaaaaa" stroke-width="1.5" stroke-dasharray="5,3"/>`;
+      legend += `<text x="${lx+27}" y="${legY0+40}" fill="#c8cce0" font-size="10" font-family="DM Sans,sans-serif">${entry.label}</text>`;
+      lx += entry.label.length * 6.4 + 42;
+    } else {
+      const C = COLORS[entry.grp] || COLORS.other;
+      legend += `<rect x="${lx}" y="${legY0+28}" width="14" height="14" rx="2" fill="${C.fill}" stroke="${C.stroke}" stroke-width="1.5"/>`;
+      legend += `<text x="${lx+19}" y="${legY0+40}" fill="#c8cce0" font-size="10" font-family="DM Sans,sans-serif">${entry.label}</text>`;
+      lx += entry.label.length * 6.4 + 34;
+    }
+  });
+
+  // ── 13. Assemble SVG ──────────────────────────────────────────────────────
+  const minW = Math.max(W, 640);
+  const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg" style="display:block;min-width:${minW}px;">
+    ${yAxisLabel}${grid}${refLine}${boxes}${xLabels}${yLabels}${legend}
+  </svg>`;
 
   const wrap = document.getElementById('boxChartWrap');
-  wrap.style.height = Math.min(H, 520) + 'px';
+  wrap.style.height = (H + 10) + 'px';
+  wrap.style.overflowX = 'auto';
   wrap.innerHTML = svg;
 }
 
@@ -931,9 +1022,9 @@ function exportXLSX() {
   const { slope, intercept, r2, blank, stdConcs, stdAbsBg, wellResults } = stdCurveData;
   const wl = document.getElementById('cfgWl').value;
   const wb = XLSX.utils.book_new();
-
-  // ── Summary sheet ── matches reference: title row, blank, header, data
   const dateStr = today();
+
+  // ── Summary sheet ──
   const expLabel = `BCA Protein Quantification — ${dateStr}`;
   const stdLine  = `Standard curve: y = ${slope.toFixed(2)}x + ${intercept.toFixed(2)}  |  R² = ${r2.toFixed(4)}  |  Blank = ${blank.toFixed(4)} AU  |  Dilution factor = ${document.getElementById('cfgDil').value} (neat)`;
   const sumRows = [
@@ -950,7 +1041,7 @@ function exportXLSX() {
   const wsSummary = XLSX.utils.aoa_to_sheet(sumRows);
   XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
 
-  // ── Per-Well Data sheet ── matches reference columns exactly
+  // ── Per-Well Data sheet ──
   const wellData = [['Well', 'Sample', `Absorbance ${wl}nm`, 'Abs (blank-corrected)', 'Protein (µg/mL)']];
   wellResults.forEach(w => wellData.push([
     w.well, w.sample, +w.abs.toFixed(4), +w.bgCorr.toFixed(4), +w.conc.toFixed(2)
@@ -958,30 +1049,199 @@ function exportXLSX() {
   const wsWells = XLSX.utils.aoa_to_sheet(wellData);
   XLSX.utils.book_append_sheet(wb, wsWells, 'Per-Well Data');
 
-  // ── Standard Curve sheet ── matches reference layout
-  const stdRows = [
-    ['BCA Standard Curve Data', '', '', '', ''],
-    [],
-    ['Standard ID', 'BSA (µg/mL)', `Absorbance ${wl}nm`, 'Abs (blank-corrected)', 'Fitted Conc (µg/mL)']
-  ];
+  // ── Standard Curve sheet ──
+  const stdRows = [['BCA Standard Curve Data','','','',''],[]
+    ,['Standard ID','BSA (µg/mL)',`Absorbance ${wl}nm`,'Abs (blank-corrected)','Fitted Conc (µg/mL)']];
   const stdIds = ['A','B','C','D','E','F','G','H','I'];
-  stdConcs.forEach((c, i) => {
-    const absRaw = stdAbsBg[i] + blank;
-    const absBg  = +stdAbsBg[i].toFixed(4);
-    const fitted = c === 0 ? 'n/a (blank)' : +(slope * stdAbsBg[i] + intercept).toFixed(2);
-    stdRows.push([stdIds[i] || String(i+1), c, +absRaw.toFixed(4), absBg, fitted]);
+  stdConcs.forEach((c,i) => {
+    const absRaw = stdAbsBg[i]+blank;
+    const fitted = c===0 ? 'n/a (blank)' : +(slope*stdAbsBg[i]+intercept).toFixed(2);
+    stdRows.push([stdIds[i]||String(i+1), c, +absRaw.toFixed(4), +stdAbsBg[i].toFixed(4), fitted]);
   });
-  stdRows.push([], [], ['Regression Statistics']);
+  stdRows.push([],[],['Regression Statistics']);
   stdRows.push(['Slope (µg·mL⁻¹ / AU)', +slope.toFixed(4)]);
   stdRows.push(['Intercept (µg/mL)',     +intercept.toFixed(4)]);
   stdRows.push(['R²',                    +r2.toFixed(5)]);
-  stdRows.push(['Blank absorbance (mean)', +blank.toFixed(4)]);
+  stdRows.push(['Blank absorbance (mean)',+blank.toFixed(4)]);
   stdRows.push(['Points used', `${stdConcs.filter(c=>c>0).length} (0 µg/mL excluded from fit)`]);
-  stdRows.push([], ['Standard curve plot']);
+  stdRows.push([],['Standard curve plot']);
   const wsStd = XLSX.utils.aoa_to_sheet(stdRows);
   XLSX.utils.book_append_sheet(wb, wsStd, 'Standard Curve');
 
+  // ── Box Plot Image sheet — render to canvas then embed ──
+  try {
+    const pngB64 = renderBoxPlotToCanvas();
+    if (pngB64) {
+      const wsImg = XLSX.utils.aoa_to_sheet([['Box Plot — Protein concentration by strain']]);
+      // SheetJS image embedding via !images extension
+      if (!wsImg['!images']) wsImg['!images'] = [];
+      wsImg['!images'].push({
+        name: 'boxplot.png',
+        data: pngB64.split(',')[1],
+        opts: { base64: true },
+        position: { type: 'twoCellAnchor', attrs: { editAs: 'oneCell' },
+          from: { col: 0, colOff: 0, row: 1, rowOff: 0 },
+          to:   { col: 12, colOff: 0, row: 30, rowOff: 0 } }
+      });
+      XLSX.utils.book_append_sheet(wb, wsImg, 'Box Plot');
+    }
+  } catch(e) { /* image embedding not supported in all browsers */ }
+
   XLSX.writeFile(wb, `BCA_Analysis_${dateStr}.xlsx`);
+}
+
+// Render the box plot to an offscreen canvas and return a PNG data URL
+function renderBoxPlotToCanvas() {
+  const parentStrain = (document.getElementById('cfgParent').value || '').trim();
+
+  const groupMap = {};
+  stdCurveData.wellResults.forEach(w => {
+    if (!groupMap[w.sample]) groupMap[w.sample] = [];
+    groupMap[w.sample].push(w.conc);
+  });
+
+  function naturalKey(s) { return s.replace(/(\d+)/g, n => n.padStart(10, '0')); }
+  function classifyGroup(name) {
+    if (name === parentStrain) return 'parent';
+    if (/[,_\- ]c1$/i.test(name)) return 'c1';
+    if (/[,_\- ]c2$/i.test(name)) return 'c2';
+    return 'other';
+  }
+  const COLORS = {
+    parent: {fill:'rgba(155,155,165,0.38)',stroke:'#9b9ba5',dot:'#c4c4cc'},
+    c1:     {fill:'rgba(79,142,247,0.40)', stroke:'#4f8ef7',dot:'#7ab0f8'},
+    c2:     {fill:'rgba(61,214,163,0.35)', stroke:'#3dd6a3',dot:'#5ee8bb'},
+    other:  {fill:'rgba(245,166,35,0.42)', stroke:'#f5a623',dot:'#f7c86a'},
+  };
+
+  const allSamples = Object.keys(groupMap);
+  const sortedNames = [...allSamples].sort((a,b) => naturalKey(a).localeCompare(naturalKey(b)));
+  const ordered = [
+    ...sortedNames.filter(s => s === parentStrain),
+    ...sortedNames.filter(s => s !== parentStrain),
+  ];
+
+  const groups = ordered.map(sample => {
+    const vals = [...groupMap[sample]].sort((a,b)=>a-b);
+    const n = vals.length;
+    const q1 = vals[Math.floor((n-1)*0.25)];
+    const med= n%2===0?(vals[n/2-1]+vals[n/2])/2:vals[(n-1)/2];
+    const q3 = vals[Math.floor((n-1)*0.75)];
+    const iqr=q3-q1;
+    const lo=Math.max(vals[0],q1-1.5*iqr);
+    const hi=Math.min(vals[n-1],q3+1.5*iqr);
+    return {sample,vals,q1,med,q3,lo,hi,grp:classifyGroup(sample)};
+  });
+
+  const allVals = groups.flatMap(g=>g.vals);
+  const rawMin=Math.min(...allVals), rawMax=Math.max(...allVals);
+  const span=rawMax-rawMin, yPad=Math.max(span*0.22,60);
+  const yMin=Math.floor((rawMin-yPad)/50)*50;
+  const yMax=Math.ceil((rawMax+yPad)/50)*50;
+
+  const DPR=2, W=1500, H=500;
+  const cv = document.createElement('canvas');
+  cv.width=W*DPR; cv.height=H*DPR;
+  const ctx = cv.getContext('2d');
+  ctx.scale(DPR,DPR);
+  ctx.fillStyle='#0f1117'; ctx.fillRect(0,0,W,H);
+
+  const padL=58, padR=24, padT=90, padB=80;
+  const plotH=H-padT-padB;
+  const N=groups.length;
+  const colW=(W-padL-padR)/N;
+  const toY = v => padT+plotH-((v-yMin)/(yMax-yMin))*plotH;
+  const cx  = i => padL+i*colW+colW/2;
+
+  // Grid
+  for(let v=yMin;v<=yMax;v+=50){
+    const y=toY(v);
+    ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke();
+    ctx.fillStyle='#7a82a0'; ctx.font='11px monospace';
+    ctx.textAlign='right'; ctx.fillText(v,padL-7,y+4);
+  }
+  ctx.strokeStyle='rgba(255,255,255,0.14)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL,padT); ctx.lineTo(padL,padT+plotH);
+  ctx.lineTo(W-padR,padT+plotH); ctx.stroke();
+
+  // Parent ref line
+  const parentG=groups.find(g=>g.sample===parentStrain);
+  if(parentG){
+    const ry=toY(parentG.med);
+    ctx.strokeStyle='rgba(170,170,170,0.6)'; ctx.lineWidth=1.3;
+    ctx.setLineDash([6,4]); ctx.beginPath();
+    ctx.moveTo(padL,ry); ctx.lineTo(W-padR,ry); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Boxes
+  const JITTER=[-0.22,-0.08,0.10,0.24,-0.15,0.04,-0.28,0.18,0.0,-0.11,0.20,-0.05,0.28,-0.20,0.08];
+  groups.forEach((g,i)=>{
+    const C=COLORS[g.grp]||COLORS.other;
+    const x=cx(i);
+    const bw=colW*0.50;
+    ctx.strokeStyle=C.stroke; ctx.lineWidth=1.4; ctx.globalAlpha=0.5;
+    ctx.beginPath(); ctx.moveTo(x,toY(g.hi)); ctx.lineTo(x,toY(g.lo)); ctx.stroke();
+    ctx.globalAlpha=1;
+    [g.lo,g.hi].forEach(v=>{
+      ctx.beginPath(); ctx.moveTo(x-bw*0.26,toY(v)); ctx.lineTo(x+bw*0.26,toY(v)); ctx.stroke();
+    });
+    ctx.fillStyle=C.fill; ctx.strokeStyle=C.stroke; ctx.lineWidth=1.5;
+    const bh=Math.max(toY(g.q1)-toY(g.q3),1);
+    ctx.beginPath(); ctx.rect(x-bw/2,toY(g.q3),bw,bh); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle=C.stroke; ctx.lineWidth=2.2;
+    ctx.beginPath(); ctx.moveTo(x-bw/2,toY(g.med)); ctx.lineTo(x+bw/2,toY(g.med)); ctx.stroke();
+    g.vals.forEach((v,vi)=>{
+      const jx=x+JITTER[vi%JITTER.length]*bw;
+      ctx.fillStyle=C.dot; ctx.globalAlpha=0.88;
+      ctx.beginPath(); ctx.arc(jx,toY(v),2.8,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha=1;
+    });
+    const lbl=parentStrain?g.sample.replace(parentStrain+'+',''):g.sample;
+    ctx.save();
+    ctx.translate(x,padT+plotH+10);
+    ctx.rotate(-Math.PI*40/180);
+    ctx.fillStyle=g.grp==='parent'?'#9b9ba5':'#c8cce0';
+    ctx.font='10px sans-serif'; ctx.textAlign='right';
+    ctx.fillText(lbl,0,0); ctx.restore();
+  });
+
+  // Y-axis label
+  ctx.save(); ctx.translate(14,padT+plotH/2); ctx.rotate(-Math.PI/2);
+  ctx.fillStyle='#7a82a0'; ctx.font='11px monospace'; ctx.textAlign='center';
+  ctx.fillText('Protein (µg/mL)',0,0); ctx.restore();
+
+  // Title & subtitle
+  ctx.fillStyle='#e8eaf2'; ctx.font='bold 14px sans-serif'; ctx.textAlign='left';
+  ctx.fillText(`Protein concentration by strain — BCA ${today()}`,padL,20);
+  ctx.fillStyle='#7a82a0'; ctx.font='10px monospace';
+  ctx.fillText(`Box = IQR, line = median, whiskers = min/max, dots = individual replicates${parentG?`. Dashed = ${parentStrain} median.`:'.'}`,padL,38);
+
+  // Legend
+  const grpsPresent=[...new Set(groups.map(g=>g.grp))];
+  const LEG_LABELS={parent:g=>`${g.sample} (parent)`,c1:_=>'Colony 1',c2:_=>'Colony 2',other:_=>'Other strains'};
+  let lx=padL;
+  grpsPresent.forEach(grp=>{
+    const ex=groups.find(g=>g.grp===grp);
+    const label=LEG_LABELS[grp]?LEG_LABELS[grp](ex):grp;
+    const C=COLORS[grp]||COLORS.other;
+    ctx.fillStyle=C.fill; ctx.strokeStyle=C.stroke; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.rect(lx,54,13,13); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#c8cce0'; ctx.font='10px sans-serif'; ctx.textAlign='left';
+    ctx.fillText(label,lx+17,66);
+    lx+=ctx.measureText(label).width+38;
+  });
+  if(parentG){
+    ctx.strokeStyle='rgba(170,170,170,0.6)'; ctx.lineWidth=1.3;
+    ctx.setLineDash([5,3]);
+    ctx.beginPath(); ctx.moveTo(lx,60); ctx.lineTo(lx+22,60); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#c8cce0'; ctx.font='10px sans-serif'; ctx.textAlign='left';
+    ctx.fillText(`${parentStrain} median`,lx+26,66);
+  }
+
+  return cv.toDataURL('image/png');
 }
 
 function today() {
