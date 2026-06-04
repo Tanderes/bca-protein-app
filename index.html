@@ -8,611 +8,541 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
 
-  :root {
-    --bg:        #0f1117;
-    --surface:   #181c27;
-    --surface2:  #1f2435;
-    --border:    #2a3050;
-    --accent:    #4f8ef7;
-    --accent2:   #3dd6a3;
-    --warn:      #f5a623;
-    --danger:    #e25454;
-    --text:      #e8eaf2;
-    --muted:     #7a82a0;
-    --mono:      'DM Mono', monospace;
-    --sans:      'DM Sans', sans-serif;
-    --radius:    8px;
-    --radius-lg: 14px;
-  }
+:root {
+  --bg:        #f5f4f0;
+  --surface:   #ffffff;
+  --surface2:  #f0eeea;
+  --border:    #dddad4;
+  --border2:   #c8c4bc;
+  --accent:    #2563eb;
+  --accent-lt: #eff4ff;
+  --accent2:   #059669;
+  --accent2-lt:#ecfdf5;
+  --warn:      #d97706;
+  --warn-lt:   #fffbeb;
+  --danger:    #dc2626;
+  --text:      #1c1917;
+  --text2:     #44403c;
+  --muted:     #78716c;
+  --mono:      'IBM Plex Mono', monospace;
+  --sans:      'IBM Plex Sans', sans-serif;
+  --radius:    6px;
+  --radius-lg: 10px;
+  --shadow:    0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04);
+}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 14px;
-    min-height: 100vh;
-    line-height: 1.6;
-  }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  min-height: 100vh;
+  line-height: 1.6;
+}
 
-  /* ── Header ── */
-  header {
-    border-bottom: 1px solid var(--border);
-    padding: 0 32px;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    background: var(--bg);
-    z-index: 100;
-  }
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--mono);
-    font-size: 15px;
-    font-weight: 500;
-    letter-spacing: -0.02em;
-    color: var(--text);
-  }
-  .logo-mark {
-    width: 28px; height: 28px;
-    background: var(--accent);
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 500; color: #fff;
-  }
-  .header-meta {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.05em;
-  }
+/* ── Header ── */
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow);
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.logo-mark {
+  width: 26px; height: 26px;
+  background: var(--accent);
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: #fff;
+  letter-spacing: 0;
+}
+.header-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.header-link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  transition: color 0.12s, background 0.12s;
+}
+.header-link:hover { color: var(--text); background: var(--surface2); }
 
-  /* ── Layout ── */
-  main {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 36px 24px 80px;
-  }
+/* ── Layout ── */
+main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
 
-  /* ── Upload zone ── */
-  .upload-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  @media (max-width: 640px) { .upload-grid { grid-template-columns: 1fr; } }
+/* ── Section label ── */
+.section-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  margin-top: 32px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
 
-  .drop-zone {
-    border: 1.5px dashed var(--border);
-    border-radius: var(--radius-lg);
-    padding: 28px 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
-    background: var(--surface);
-    position: relative;
-  }
-  .drop-zone:hover, .drop-zone.drag-over {
-    border-color: var(--accent);
-    background: rgba(79,142,247,0.06);
-  }
-  .drop-zone.loaded {
-    border-color: var(--accent2);
-    border-style: solid;
-    background: rgba(61,214,163,0.05);
-  }
-  .drop-zone input[type=file] {
-    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-  }
-  .dz-icon {
-    font-size: 28px;
-    margin-bottom: 8px;
-    display: block;
-  }
-  .dz-label {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-  .dz-sub {
-    font-size: 11px;
-    color: var(--muted);
-    font-family: var(--mono);
-  }
-  .dz-filename {
-    margin-top: 10px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--accent2);
-    background: rgba(61,214,163,0.1);
-    padding: 4px 10px;
-    border-radius: 4px;
-    display: inline-block;
-  }
+/* ── About panel ── */
+.about-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.about-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 18px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-align: left;
+  gap: 10px;
+  transition: background 0.12s;
+}
+.about-toggle:hover { background: var(--surface2); }
+.about-toggle-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.about-chevron { transition: transform 0.2s; color: var(--muted); }
+.about-panel.open .about-chevron { transform: rotate(180deg); }
+.about-body {
+  display: none;
+  padding: 0 20px 20px;
+  border-top: 1px solid var(--border);
+}
+.about-panel.open .about-body { display: block; }
+.about-intro {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.7;
+  padding: 14px 0 16px;
+  max-width: 740px;
+}
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+@media (max-width: 640px) { .about-grid { grid-template-columns: 1fr; } }
+.about-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+.about-card-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.about-card ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.about-card ul li {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  display: flex; gap: 6px; align-items: flex-start; line-height: 1.5;
+}
+.about-card ul li::before { content: '→'; color: var(--accent2); flex-shrink: 0; }
+.about-card p { font-size: 11px; color: var(--muted); line-height: 1.6; }
+.about-card strong { color: var(--text2); }
+.steps { display: flex; flex-direction: column; gap: 7px; }
+.step { display: flex; gap: 10px; align-items: flex-start; }
+.step-num {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--accent-lt); border: 1px solid #bfdbfe;
+  color: var(--accent); font-family: var(--mono); font-size: 9px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+}
+.step-text { font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.5; }
+.step-text strong { color: var(--text2); }
+.sample-bar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 12px 0 2px; border-top: 1px solid var(--border); margin-top: 14px;
+}
+.sample-bar-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--muted); white-space: nowrap;
+}
+.sample-link {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--mono); font-size: 11px; color: var(--accent);
+  text-decoration: none; padding: 3px 9px; border-radius: 4px;
+  border: 1px solid #bfdbfe; background: var(--accent-lt);
+  transition: background 0.12s, border-color 0.12s;
+}
+.sample-link:hover { background: #dbeafe; border-color: #93c5fd; }
+.protocol-link {
+  color: var(--accent2); border-color: #a7f3d0; background: var(--accent2-lt);
+}
+.protocol-link:hover { background: #d1fae5; border-color: #6ee7b7; }
 
-  /* ── Config bar ── */
-  .config-bar {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 12px 20px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-  }
-  .config-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--muted);
-  }
-  .config-item label { color: var(--muted); white-space: nowrap; }
-  .config-item input, .config-item select {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 12px;
-    padding: 5px 10px;
-    width: 80px;
-    outline: none;
-  }
-  .config-item input:focus, .config-item select:focus {
-    border-color: var(--accent);
-  }
-  .config-sep {
-    width: 1px; height: 24px;
-    background: var(--border);
-  }
+/* ── Upload grid ── */
+.upload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+@media (max-width: 640px) { .upload-grid { grid-template-columns: 1fr; } }
 
-  /* ── Run button ── */
-  .run-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius);
-    padding: 10px 24px;
-    font-family: var(--sans);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
-    margin-left: auto;
-  }
-  .run-btn:hover { background: #3a7de8; }
-  .run-btn:active { transform: scale(0.98); }
-  .run-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+.upload-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s;
+}
+.upload-card.loaded { border-color: var(--accent2); }
+.upload-card.drag-over { border-color: var(--accent); border-style: dashed; }
 
-  /* ── Error/status bar ── */
-  .status-bar {
-    border-radius: var(--radius);
-    padding: 10px 16px;
-    font-size: 13px;
-    margin-bottom: 20px;
-    display: none;
-    font-family: var(--mono);
-  }
-  .status-bar.error { background: rgba(226,84,84,0.1); border: 1px solid rgba(226,84,84,0.3); color: #f07070; display: block; }
-  .status-bar.info  { background: rgba(79,142,247,0.1); border: 1px solid rgba(79,142,247,0.3); color: #7aacf7; display: block; }
+.upload-header {
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.upload-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text2);
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.upload-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 3px;
+  background: var(--surface2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+.upload-badge.loaded {
+  background: var(--accent2-lt);
+  color: var(--accent2);
+  border-color: #a7f3d0;
+}
 
-  /* ── Results ── */
-  #results { display: none; }
+/* Drop zone (top part of card) */
+.drop-zone {
+  padding: 20px 16px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  background: var(--surface);
+  transition: background 0.12s;
+  border-bottom: 1px solid var(--border);
+}
+.drop-zone:hover { background: var(--surface2); }
+.drop-zone input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.dz-icon { font-size: 22px; margin-bottom: 5px; display: block; }
+.dz-label { font-size: 12px; font-weight: 500; color: var(--text2); margin-bottom: 2px; }
+.dz-sub { font-size: 10px; color: var(--muted); font-family: var(--mono); }
+.dz-filename {
+  margin-top: 7px;
+  font-family: var(--mono); font-size: 10px; color: var(--accent2);
+  background: var(--accent2-lt); padding: 2px 8px; border-radius: 3px;
+  display: inline-block; border: 1px solid #a7f3d0;
+}
 
-  .section-title {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 14px;
-    margin-top: 36px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
+/* ── Plate preview ── */
+.plate-preview {
+  padding: 12px 14px;
+  overflow-x: auto;
+  min-height: 60px;
+  background: var(--surface);
+}
+.plate-empty {
+  display: flex; align-items: center; justify-content: center;
+  height: 60px;
+  font-family: var(--mono); font-size: 10px; color: var(--border2);
+  letter-spacing: 0.05em;
+}
+.plate-grid {
+  display: inline-block;
+  width: 100%;
+}
+.plate-row {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 2px;
+  align-items: center;
+}
+.plate-row-label {
+  font-family: var(--mono); font-size: 8px; color: var(--muted);
+  width: 10px; text-align: right; margin-right: 4px; flex-shrink: 0;
+}
+.plate-col-labels {
+  display: flex; gap: 2px; margin-bottom: 3px; padding-left: 14px;
+}
+.plate-col-label {
+  font-family: var(--mono); font-size: 8px; color: var(--muted);
+  text-align: center; flex: 1;
+}
+.well {
+  flex: 1;
+  aspect-ratio: 1;
+  border-radius: 2px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 6px;
+  overflow: hidden;
+  cursor: default;
+  position: relative;
+  border: 1px solid transparent;
+  min-width: 0;
+}
+.well:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: #fff;
+  font-size: 9px;
+  padding: 3px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  z-index: 50;
+  pointer-events: none;
+}
 
-  /* ── Stat cards ── */
-  .stat-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
-    margin-bottom: 28px;
-  }
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 16px 18px;
-  }
-  .stat-card .s-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-  .stat-card .s-value {
-    font-family: var(--mono);
-    font-size: 22px;
-    font-weight: 500;
-    color: var(--text);
-    line-height: 1.2;
-  }
-  .stat-card .s-sub {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 3px;
-  }
-  .stat-card.good .s-value { color: var(--accent2); }
-  .stat-card.warn .s-value { color: var(--warn); }
+/* ── Config bar ── */
+.config-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow);
+}
+.config-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--muted);
+}
+.config-item label { color: var(--muted); white-space: nowrap; font-family: var(--mono); font-size: 11px; }
+.config-item input, .config-item select {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 4px 8px;
+  width: 72px;
+  outline: none;
+  transition: border-color 0.12s;
+}
+.config-item input:focus, .config-item select:focus { border-color: var(--accent); }
+.config-sep { width: 1px; height: 20px; background: var(--border); }
 
-  /* ── Charts ── */
-  .charts-grid {
-    display: grid;
-    grid-template-columns: 380px 1fr;
-    gap: 16px;
-    margin-bottom: 28px;
-  }
-  @media (max-width: 780px) { .charts-grid { grid-template-columns: 1fr; } }
+/* ── Run button ── */
+.run-btn {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--radius);
+  padding: 8px 20px;
+  font-family: var(--sans); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: background 0.12s, transform 0.1s;
+  margin-left: auto; white-space: nowrap;
+}
+.run-btn:hover { background: #1d4ed8; }
+.run-btn:active { transform: scale(0.98); }
+.run-btn:disabled { background: var(--border2); color: var(--muted); cursor: not-allowed; }
 
-  .chart-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 20px;
-  }
-  .chart-card h3 {
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 14px;
-  }
-  .chart-card .chart-eq {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--accent);
-    margin-bottom: 4px;
-  }
-  .chart-card .chart-r2 {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--accent2);
-    margin-bottom: 14px;
-  }
+/* ── Reset button ── */
+.reset-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: none; color: var(--muted);
+  border: 1px solid var(--border2); border-radius: var(--radius);
+  padding: 8px 14px;
+  font-family: var(--sans); font-size: 13px; font-weight: 400;
+  cursor: pointer; transition: color 0.12s, border-color 0.12s, background 0.12s;
+  white-space: nowrap;
+}
+.reset-btn:hover { color: var(--danger); border-color: #fca5a5; background: #fef2f2; }
+#resetBtn { display: none; }
 
-  /* ── Summary table ── */
-  .table-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    margin-bottom: 28px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-  thead tr {
-    background: var(--surface2);
-    border-bottom: 1px solid var(--border);
-  }
-  th {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    text-transform: uppercase;
-    padding: 10px 16px;
-    text-align: left;
-    font-weight: 400;
-  }
-  td {
-    padding: 9px 16px;
-    border-bottom: 1px solid var(--border);
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text);
-  }
-  tr:last-child td { border-bottom: none; }
-  tbody tr:hover { background: rgba(255,255,255,0.02); }
-  .td-sample {
-    font-family: var(--sans);
-    font-weight: 500;
-    font-size: 13px;
-  }
-  .badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-family: var(--mono);
-    letter-spacing: 0.04em;
-  }
-  .badge-warn { background: rgba(245,166,35,0.15); color: var(--warn); border: 1px solid rgba(245,166,35,0.3); }
-  .badge-ok   { background: rgba(61,214,163,0.1);  color: var(--accent2); border: 1px solid rgba(61,214,163,0.2); }
+/* ── Status bar ── */
+.status-bar {
+  border-radius: var(--radius);
+  padding: 9px 14px; font-size: 12px;
+  margin-bottom: 16px; display: none;
+  font-family: var(--mono);
+}
+.status-bar.error { background: #fef2f2; border: 1px solid #fecaca; color: var(--danger); display: block; }
+.status-bar.info  { background: var(--warn-lt); border: 1px solid #fde68a; color: var(--warn); display: block; }
 
-  /* ── Export bar ── */
-  .export-bar {
-    display: flex;
-    gap: 10px;
-    margin-top: 8px;
-    flex-wrap: wrap;
-  }
-  .btn-secondary {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--surface2);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 8px 16px;
-    font-family: var(--sans);
-    font-size: 13px;
-    cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
-  }
-  .btn-secondary:hover { border-color: var(--accent); background: rgba(79,142,247,0.07); }
+/* ── Results ── */
+#results { display: none; }
 
-  /* ── Loading spinner ── */
-  .spinner {
-    display: inline-block;
-    width: 14px; height: 14px;
-    border: 2px solid rgba(255,255,255,0.2);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    vertical-align: middle;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* ── Stat cards ── */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px; margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 14px 16px;
+  box-shadow: var(--shadow);
+}
+.stat-card .s-label {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em;
+  color: var(--muted); text-transform: uppercase; margin-bottom: 5px;
+}
+.stat-card .s-value {
+  font-family: var(--mono); font-size: 20px; font-weight: 500;
+  color: var(--text); line-height: 1.2;
+}
+.stat-card .s-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.stat-card.good .s-value { color: var(--accent2); }
+.stat-card.warn  .s-value { color: var(--warn); }
 
-  /* ── Footer ── */
-  footer {
-    border-top: 1px solid var(--border);
-    text-align: center;
-    padding: 20px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 60px;
-  }
-  footer a { color: var(--muted); text-decoration: none; }
-  footer a:hover { color: var(--accent); }
+/* ── Charts ── */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 14px; margin-bottom: 24px;
+}
+@media (max-width: 780px) { .charts-grid { grid-template-columns: 1fr; } }
+.chart-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 18px;
+  box-shadow: var(--shadow);
+}
+.chart-card h3 {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+  color: var(--muted); text-transform: uppercase; margin-bottom: 10px;
+}
+.chart-eq { font-family: var(--mono); font-size: 11px; color: var(--accent); margin-bottom: 3px; }
+.chart-r2 { font-family: var(--mono); font-size: 11px; color: var(--accent2); margin-bottom: 12px; }
 
-  /* ── Header links ── */
-  .header-links {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .header-link {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    text-decoration: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    border: 1px solid transparent;
-    transition: color 0.15s, border-color 0.15s, background 0.15s;
-    letter-spacing: 0.03em;
-  }
-  .header-link:hover {
-    color: var(--text);
-    border-color: var(--border);
-    background: var(--surface);
-  }
-  .header-link svg { flex-shrink: 0; }
+/* ── Summary table ── */
+.table-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+  margin-bottom: 24px; box-shadow: var(--shadow);
+}
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead tr { background: var(--surface2); border-bottom: 1px solid var(--border); }
+th {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em;
+  color: var(--muted); text-transform: uppercase; padding: 9px 14px;
+  text-align: left; font-weight: 500;
+}
+td {
+  padding: 8px 14px; border-bottom: 1px solid var(--border);
+  font-family: var(--mono); font-size: 11px; color: var(--text2);
+}
+tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--surface2); }
+.td-sample { font-family: var(--sans); font-weight: 500; font-size: 12px; color: var(--text); }
+.badge {
+  display: inline-block; padding: 1px 7px; border-radius: 3px;
+  font-size: 9px; font-family: var(--mono); letter-spacing: 0.04em;
+}
+.badge-warn { background: var(--warn-lt); color: var(--warn); border: 1px solid #fde68a; }
+.badge-ok   { background: var(--accent2-lt); color: var(--accent2); border: 1px solid #a7f3d0; }
 
-  /* ── About panel ── */
-  .about-panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    margin-bottom: 28px;
-    overflow: hidden;
-  }
-  .about-toggle {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 20px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    text-align: left;
-    gap: 10px;
-  }
-  .about-toggle:hover { background: rgba(255,255,255,0.02); }
-  .about-toggle-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--muted);
-  }
-  .about-toggle-left span { color: var(--text); }
-  .about-chevron {
-    transition: transform 0.2s;
-    color: var(--muted);
-  }
-  .about-panel.open .about-chevron { transform: rotate(180deg); }
-  .about-body {
-    display: none;
-    padding: 0 24px 24px;
-    border-top: 1px solid var(--border);
-  }
-  .about-panel.open .about-body { display: block; }
+/* ── Export bar ── */
+.export-bar { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-secondary {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--surface2); color: var(--text2);
+  border: 1px solid var(--border2); border-radius: var(--radius);
+  padding: 7px 14px; font-family: var(--sans); font-size: 12px;
+  cursor: pointer; transition: border-color 0.12s, background 0.12s;
+}
+.btn-secondary:hover { border-color: var(--accent); background: var(--accent-lt); color: var(--accent); }
 
-  /* ── About content ── */
-  .about-intro {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.7;
-    padding: 16px 0 20px;
-    max-width: 760px;
-  }
-  .about-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 20px;
-  }
-  @media (max-width: 640px) { .about-grid { grid-template-columns: 1fr; } }
+/* ── Spinner ── */
+.spinner {
+  display: inline-block; width: 12px; height: 12px;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin 0.7s linear infinite; vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-  .about-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-  }
-  .about-card-title {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 10px;
-  }
-  .about-card ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .about-card ul li {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    display: flex;
-    gap: 8px;
-    align-items: flex-start;
-    line-height: 1.5;
-  }
-  .about-card ul li::before {
-    content: '→';
-    color: var(--accent2);
-    flex-shrink: 0;
-  }
-  .about-card p {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.6;
-  }
-  .about-card strong { color: var(--text); }
-
-  /* ── Sample files bar ── */
-  .sample-bar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    padding: 12px 0 4px;
-    border-top: 1px solid var(--border);
-    margin-top: 16px;
-  }
-  .sample-bar-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-  .sample-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--accent);
-    text-decoration: none;
-    padding: 4px 10px;
-    border-radius: 4px;
-    border: 1px solid rgba(79,142,247,0.25);
-    background: rgba(79,142,247,0.06);
-    transition: background 0.15s, border-color 0.15s;
-  }
-  .sample-link:hover {
-    background: rgba(79,142,247,0.12);
-    border-color: rgba(79,142,247,0.5);
-  }
-  .protocol-link {
-    color: var(--accent2);
-    border-color: rgba(61,214,163,0.25);
-    background: rgba(61,214,163,0.05);
-  }
-  .protocol-link:hover {
-    background: rgba(61,214,163,0.10);
-    border-color: rgba(61,214,163,0.5);
-  }
-
-  /* ── How it works steps ── */
-  .steps {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .step {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-  }
-  .step-num {
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: rgba(79,142,247,0.15);
-    border: 1px solid rgba(79,142,247,0.3);
-    color: var(--accent);
-    font-family: var(--mono);
-    font-size: 10px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-  .step-text {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-  .step-text strong { color: var(--text); }
+/* ── Footer ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 16px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
+  margin-top: 60px; gap: 16px; flex-wrap: wrap;
+}
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+.footer-links { display: flex; gap: 14px; }
 </style>
 </head>
 <body>
@@ -623,12 +553,12 @@
     BCA Protein App
   </div>
   <div class="header-links">
-    <a class="header-link" href="https://tanderes.github.io/bca-protein-app/MAN0011430_Pierce_BCA_Protein_Asy_UG.pdf" target="_blank" title="Pierce BCA Protocol PDF">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    <a class="header-link" href="https://tanderes.github.io/bca-protein-app/MAN0011430_Pierce_BCA_Protein_Asy_UG.pdf" target="_blank">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       Protocol
     </a>
-    <a class="header-link" href="https://github.com/tanderes/bca-protein-app" target="_blank" title="View source on GitHub">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+    <a class="header-link" href="https://github.com/tanderes/bca-protein-app" target="_blank">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
       GitHub
     </a>
   </div>
@@ -636,104 +566,113 @@
 
 <main>
 
-  <!-- About / README panel -->
+  <!-- About panel -->
   <div class="about-panel" id="aboutPanel">
     <button class="about-toggle" onclick="toggleAbout()">
       <div class="about-toggle-left">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--accent)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span>About this app</span>
-        <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;">— how to use, file format, test data</span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span style="color:var(--text2);font-weight:500;">About this app</span>
+        <span style="color:var(--muted);font-weight:400;font-size:10px;text-transform:none;letter-spacing:0;">— how to use, file format, test data &amp; downloads</span>
       </div>
-      <svg class="about-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      <svg class="about-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
     </button>
-
     <div class="about-body">
-      <p class="about-intro">
-        A browser-based tool for analysing Pierce BCA microplate protein assays. Upload two CSVs — absorbance readings and a plate layout map — and the app fits a BSA standard curve, interpolates protein concentrations for every sample well, and renders an interactive box plot grouped by strain.
-        No server, no installation, <strong style="color:var(--text)">no data leaves your machine</strong>.
-      </p>
-
+      <p class="about-intro">Browser-based Pierce BCA microplate analysis — upload two CSVs, get a standard curve, interpolated concentrations, and an interactive box plot. <strong>No data leaves your machine.</strong></p>
       <div class="about-grid">
-
         <div class="about-card">
           <div class="about-card-title">Input file format</div>
           <ul>
-            <li>Both CSVs must use <strong>rows A–H</strong> in column 1 and <strong>columns 1–12</strong> in the header — standard 96-well grid</li>
-            <li><strong>Absorbance file</strong> — raw plate reader values, one per well</li>
-            <li><strong>Layout file</strong> — sample name per well; standard curve wells labelled <strong>STD</strong></li>
-            <li>Standard curve is read from the row set in <strong>Standards in row</strong> (default: row H, last row)</li>
-            <li>Empty wells can be left blank in the layout file</li>
+            <li>Both CSVs: <strong>rows A–H</strong> in col 1, <strong>cols 1–12</strong> in header</li>
+            <li><strong>Absorbance file</strong> — raw plate reader values</li>
+            <li><strong>Layout file</strong> — sample name per well; standard wells labelled <strong>STD</strong></li>
+            <li>Standard curve read from the row set in config (default: <strong>row H</strong>)</li>
           </ul>
         </div>
-
         <div class="about-card">
           <div class="about-card-title">How it works</div>
           <div class="steps">
             <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Blank correction</strong> — mean A₀ subtracted from every well</div></div>
-            <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Linear regression</strong> — least-squares fit on blank-corrected standards (0 µg/mL excluded)</div></div>
-            <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Interpolation</strong> — conc = slope × (abs − blank) + intercept, × dilution factor</div></div>
-            <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Statistics</strong> — mean, SD, CV per sample across all replicate wells</div></div>
-            <div class="step"><div class="step-num">5</div><div class="step-text"><strong>Box plot</strong> — per-well values, IQR box, median, whiskers, individual dots; parent strain sets dashed reference line</div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Linear regression</strong> — least-squares fit on blank-corrected standards</div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Interpolation</strong> — conc = slope × (abs − blank) + intercept × dilution factor</div></div>
+            <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Box plot</strong> — per-well values, parent strain sets dashed reference</div></div>
           </div>
         </div>
-
         <div class="about-card">
           <div class="about-card-title">Config settings</div>
           <ul>
-            <li><strong>Wavelength</strong> — plate reader measurement wavelength (nm). Default 526.</li>
-            <li><strong>Dilution factor</strong> — multiplier applied to all concentrations. Use 1 for undiluted.</li>
-            <li><strong>Standards in row</strong> — which plate row holds BSA standards. Default H.</li>
-            <li><strong>Std concentrations</strong> — comma-separated µg/mL values left-to-right; must include a 0 for blank.</li>
-            <li><strong>Parent strain</strong> — sets the dashed reference line and grey colour group on the box plot.</li>
+            <li><strong>Wavelength</strong> — measurement wavelength (nm), default 526</li>
+            <li><strong>Dilution factor</strong> — multiplier for all concentrations</li>
+            <li><strong>Standards in row</strong> — which row holds BSA standards</li>
+            <li><strong>Std concentrations</strong> — comma-separated µg/mL, must include 0</li>
+            <li><strong>Parent strain</strong> — dashed reference line on box plot</li>
           </ul>
         </div>
-
         <div class="about-card">
           <div class="about-card-title">Test data — 20260522 Y293 PDIs</div>
-          <p style="margin-bottom:10px;">BCA assay measuring protein concentration in Y293 yeast strains expressing PDI variants. Standard curve in <strong>row H</strong> (all 12 wells = STD).</p>
+          <p style="margin-bottom:8px;">Y293 yeast strains expressing PDI variants. Standards in <strong>row H</strong> (all 12 wells = STD).</p>
           <ul>
-            <li><strong>Rows A–C</strong> — Y293+EBB769–797 colony 1 (c1) replicates</li>
-            <li><strong>Rows D–F</strong> — Y293+EBB769–797 colony 2 (c2) replicates</li>
-            <li><strong>Row G</strong> — control strains: Y11, Y243, Y310, Y371</li>
-            <li><strong>Row H</strong> — BSA standards: 2000, 1500, 1000, 750, 500, 250, 125, 25, 0 µg/mL</li>
-            <li>Expected output: R² ≥ 0.99, concentrations ~500–700 µg/mL, parent Y293 ~600 µg/mL</li>
+            <li><strong>Rows A–C</strong> — colony 1 replicates (c1)</li>
+            <li><strong>Rows D–F</strong> — colony 2 replicates (c2)</li>
+            <li><strong>Row G</strong> — controls: Y11, Y243, Y310, Y371</li>
+            <li>Expected: R² ≥ 0.99, ~500–700 µg/mL, Y293 ~600 µg/mL</li>
           </ul>
         </div>
-
       </div>
-
       <div class="sample-bar">
-        <span class="sample-bar-label">Sample files &amp; protocol</span>
-        <a class="sample-link" href="https://tanderes.github.io/bca-protein-app/sample-data/20260522_BCA_293PDIs.csv" download>
-          ⬇ 20260522_BCA_293PDIs.csv
-        </a>
-        <a class="sample-link" href="https://tanderes.github.io/bca-protein-app/sample-data/Transformation__Y293___PDIs_-_PC_layout1.csv" download>
-          ⬇ Transformation_Y293_PDIs_layout.csv
-        </a>
-        <a class="sample-link protocol-link" href="https://tanderes.github.io/bca-protein-app/MAN0011430_Pierce_BCA_Protein_Asy_UG.pdf" target="_blank">
-          📄 Pierce BCA Protocol (PDF)
-        </a>
+        <span class="sample-bar-label">Downloads</span>
+        <a class="sample-link" href="https://tanderes.github.io/bca-protein-app/sample-data/20260522_BCA_293PDIs.csv" download>⬇ Absorbance CSV</a>
+        <a class="sample-link" href="https://tanderes.github.io/bca-protein-app/sample-data/Transformation__Y293___PDIs_-_PC_layout1.csv" download>⬇ Layout CSV</a>
+        <a class="sample-link protocol-link" href="https://tanderes.github.io/bca-protein-app/MAN0011430_Pierce_BCA_Protein_Asy_UG.pdf" target="_blank">📄 Pierce BCA Protocol</a>
       </div>
     </div>
   </div>
 
   <!-- Upload -->
-  <div class="section-title">Input files</div>
+  <div class="section-label">Input files</div>
   <div class="upload-grid">
-    <div class="drop-zone" id="dzAbs" ondragover="doDragOver(event,'dzAbs')" ondragleave="doDragLeave('dzAbs')" ondrop="doDrop(event,'abs')">
-      <input type="file" accept=".csv" onchange="handleFile(event,'abs')"/>
-      <span class="dz-icon">📊</span>
-      <div class="dz-label">Absorbance data</div>
-      <div class="dz-sub">plate_reader_output.csv — rows A–H, cols 1–12</div>
-      <div class="dz-filename" id="fnAbs" style="display:none"></div>
+
+    <!-- Absorbance card -->
+    <div class="upload-card" id="cardAbs" ondragover="doDragOver(event,'cardAbs')" ondragleave="doDragLeave('cardAbs')" ondrop="doDrop(event,'abs')">
+      <div class="upload-header">
+        <div class="upload-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          Absorbance data
+        </div>
+        <span class="upload-badge" id="badgeAbs">No file</span>
+      </div>
+      <div class="drop-zone" id="dzAbs">
+        <input type="file" accept=".csv" onchange="handleFile(event,'abs')"/>
+        <span class="dz-icon">📊</span>
+        <div class="dz-label">Drop CSV or click to browse</div>
+        <div class="dz-sub">rows A–H · cols 1–12 · absorbance values</div>
+        <div class="dz-filename" id="fnAbs" style="display:none"></div>
+      </div>
+      <div class="plate-preview" id="previewAbs">
+        <div class="plate-empty" id="emptyAbs">plate preview appears here after upload</div>
+      </div>
     </div>
-    <div class="drop-zone" id="dzLay" ondragover="doDragOver(event,'dzLay')" ondragleave="doDragLeave('dzLay')" ondrop="doDrop(event,'layout')">
-      <input type="file" accept=".csv" onchange="handleFile(event,'layout')"/>
-      <span class="dz-icon">🗺️</span>
-      <div class="dz-label">Plate layout map</div>
-      <div class="dz-sub">layout.csv — same grid, cell = sample name</div>
-      <div class="dz-filename" id="fnLay" style="display:none"></div>
+
+    <!-- Layout card -->
+    <div class="upload-card" id="cardLay" ondragover="doDragOver(event,'cardLay')" ondragleave="doDragLeave('cardLay')" ondrop="doDrop(event,'layout')">
+      <div class="upload-header">
+        <div class="upload-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+          Plate layout map
+        </div>
+        <span class="upload-badge" id="badgeLay">No file</span>
+      </div>
+      <div class="drop-zone" id="dzLay">
+        <input type="file" accept=".csv" onchange="handleFile(event,'layout')"/>
+        <span class="dz-icon">🗺️</span>
+        <div class="dz-label">Drop CSV or click to browse</div>
+        <div class="dz-sub">rows A–H · cols 1–12 · sample names</div>
+        <div class="dz-filename" id="fnLay" style="display:none"></div>
+      </div>
+      <div class="plate-preview" id="previewLay">
+        <div class="plate-empty" id="emptyLay">plate preview appears here after upload</div>
+      </div>
     </div>
+
   </div>
 
   <!-- Config -->
@@ -741,19 +680,19 @@
     <div class="config-item">
       <label>Wavelength</label>
       <input id="cfgWl" type="number" value="526" min="400" max="700"/>
-      <span style="font-size:12px;color:var(--muted)">nm</span>
+      <span style="font-size:11px;color:var(--muted);font-family:var(--mono)">nm</span>
     </div>
     <div class="config-sep"></div>
     <div class="config-item">
-      <label>Dilution factor</label>
+      <label>Dilution</label>
       <input id="cfgDil" type="number" value="1" min="1" step="1"/>
-      <span style="font-size:12px;color:var(--muted)">×</span>
+      <span style="font-size:11px;color:var(--muted);font-family:var(--mono)">×</span>
     </div>
     <div class="config-sep"></div>
     <div class="config-item">
-      <label>Standards in row</label>
+      <label>Std row</label>
       <select id="cfgStdRow">
-        <option value="H" selected>H (default)</option>
+        <option value="H" selected>H</option>
         <option value="A">A</option><option value="B">B</option><option value="C">C</option>
         <option value="D">D</option><option value="E">E</option><option value="F">F</option>
         <option value="G">G</option>
@@ -761,17 +700,25 @@
     </div>
     <div class="config-sep"></div>
     <div class="config-item">
-      <label>Std concentrations (µg/mL)</label>
-      <input id="cfgStds" type="text" value="2000,1500,1000,750,500,250,125,25,0" style="width:260px;font-size:11px;"/>
+      <label>Std conc. (µg/mL)</label>
+      <input id="cfgStds" type="text" value="2000,1500,1000,750,500,250,125,25,0" style="width:240px;font-size:10px;"/>
     </div>
     <div class="config-sep"></div>
     <div class="config-item">
       <label>Parent strain</label>
-      <input id="cfgParent" type="text" value="Y293" style="width:90px;" placeholder="e.g. Y293"
-             title="Sets the dashed reference line and grey colour on the box plot"/>
+      <input id="cfgParent" type="text" value="Y293" style="width:80px;" placeholder="e.g. Y293"/>
+    </div>
+    <div class="config-sep"></div>
+    <div class="config-item">
+      <label>CV flag (%)</label>
+      <input id="cfgCv" type="number" value="10" min="1" max="50" step="1" style="width:56px;" title="Samples above this CV% are flagged"/>
     </div>
     <button class="run-btn" id="runBtn" onclick="runAnalysis()" disabled>
       <span id="runLabel">Run analysis</span>
+    </button>
+    <button class="reset-btn" id="resetBtn" onclick="resetApp()" title="Clear all data and start over">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+      Reset
     </button>
   </div>
 
@@ -780,7 +727,7 @@
   <!-- Results -->
   <div id="results">
 
-    <div class="section-title">Standard curve</div>
+    <div class="section-label">Standard curve</div>
     <div id="stdStats" class="stat-cards"></div>
 
     <div class="charts-grid">
@@ -788,47 +735,55 @@
         <h3>Standard curve</h3>
         <div class="chart-eq" id="eqLabel"></div>
         <div class="chart-r2" id="r2Label"></div>
-        <div style="position:relative;height:240px;">
-          <canvas id="stdChart" role="img" aria-label="BCA standard curve scatter plot with linear fit"></canvas>
+        <div style="position:relative;height:230px;">
+          <canvas id="stdChart"></canvas>
         </div>
       </div>
     </div>
-    <div class="chart-card" style="margin-bottom:28px;">
+
+    <div class="chart-card" style="margin-bottom:24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <h3 style="margin-bottom:0;">Protein concentration by strain</h3>
+        <button class="btn-secondary" onclick="downloadBoxPlot()" id="dlBoxBtn" style="font-size:11px;padding:5px 11px;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download PNG
+        </button>
+      </div>
       <div id="boxChartWrap" style="position:relative;overflow-x:auto;"></div>
     </div>
 
-    <div class="section-title">Summary table</div>
+    <div class="section-label">Summary table</div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th>Sample</th>
-            <th>N</th>
-            <th>Mean (µg/mL)</th>
-            <th>SD (µg/mL)</th>
-            <th>CV (%)</th>
-            <th>Status</th>
+            <th>Sample</th><th>N</th><th>Mean (µg/mL)</th>
+            <th>SD (µg/mL)</th><th>CV (%)</th><th>Status</th>
           </tr>
         </thead>
         <tbody id="summaryBody"></tbody>
       </table>
     </div>
 
-    <div class="section-title">Export</div>
+    <div class="section-label">Export</div>
     <div class="export-bar">
-      <button class="btn-secondary" onclick="exportCSV()">⬇ Download CSV</button>
-      <button class="btn-secondary" onclick="exportXLSX()">⬇ Download Excel (.xlsx)</button>
+      <button class="btn-secondary" onclick="exportCSV()">⬇ CSV</button>
+      <button class="btn-secondary" onclick="exportXLSX()">⬇ Excel (.xlsx)</button>
+      <button class="btn-secondary" onclick="copyTable()" id="copyBtn">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy table
+      </button>
     </div>
 
   </div>
 </main>
 
 <footer>
-  BCA Protein App · Pierce BCA Microplate Procedure · Row H standards · Linear regression interpolation
-  &nbsp;·&nbsp;
-  <a href="https://github.com/tanderes/bca-protein-app" target="_blank">GitHub</a>
-  &nbsp;·&nbsp;
-  <a href="https://tanderes.github.io/bca-protein-app/MAN0011430_Pierce_BCA_Protein_Asy_UG.pdf" target="_blank">Protocol MAN0011430</a>
+  <span>BCA Protein App · Pierce BCA Microplate · Linear regression</span>
+  <div class="footer-links">
+    <a href="https://github.com/tanderes/bca-protein-app" target="_blank">GitHub</a>
+    <a href="https://tanderes.github.io/bca-protein-app/MAN0011430_Pierce_BCA_Protein_Asy_UG.pdf" target="_blank">Protocol</a>
+  </div>
 </footer>
 
 <script>
@@ -843,11 +798,16 @@ function handleFile(evt, type) {
   if (!file) return;
   readCSV(file, type);
 }
-function doDragOver(evt, id) { evt.preventDefault(); document.getElementById(id).classList.add('drag-over'); }
-function doDragLeave(id) { document.getElementById(id).classList.remove('drag-over'); }
+function doDragOver(evt, id) {
+  evt.preventDefault();
+  document.getElementById(id).classList.add('drag-over');
+}
+function doDragLeave(id) {
+  document.getElementById(id).classList.remove('drag-over');
+}
 function doDrop(evt, type) {
   evt.preventDefault();
-  const id = type === 'abs' ? 'dzAbs' : 'dzLay';
+  const id = type === 'abs' ? 'cardAbs' : 'cardLay';
   document.getElementById(id).classList.remove('drag-over');
   const file = evt.dataTransfer.files[0];
   if (file) readCSV(file, type);
@@ -859,14 +819,20 @@ function readCSV(file, type) {
     complete: res => {
       if (type === 'abs') {
         absData = res.data;
-        document.getElementById('dzAbs').classList.add('loaded');
+        document.getElementById('cardAbs').classList.add('loaded');
         const fn = document.getElementById('fnAbs');
-        fn.textContent = file.name; fn.style.display = 'inline-block';
+        fn.textContent = '✓ ' + file.name; fn.style.display = 'inline-block';
+        const badge = document.getElementById('badgeAbs');
+        badge.textContent = 'Loaded'; badge.classList.add('loaded');
+        renderPlatePreview(res.data, 'previewAbs', 'emptyAbs', 'abs');
       } else {
         layoutData = res.data;
-        document.getElementById('dzLay').classList.add('loaded');
+        document.getElementById('cardLay').classList.add('loaded');
         const fn = document.getElementById('fnLay');
-        fn.textContent = file.name; fn.style.display = 'inline-block';
+        fn.textContent = '✓ ' + file.name; fn.style.display = 'inline-block';
+        const badge = document.getElementById('badgeLay');
+        badge.textContent = 'Loaded'; badge.classList.add('loaded');
+        renderPlatePreview(res.data, 'previewLay', 'emptyLay', 'layout');
       }
       checkReady();
     },
@@ -875,46 +841,195 @@ function readCSV(file, type) {
 }
 
 function checkReady() {
-  document.getElementById('runBtn').disabled = !(absData && layoutData);
+  const ready = !!(absData && layoutData);
+  document.getElementById('runBtn').disabled = !ready;
+  document.getElementById('resetBtn').style.display = ready ? 'flex' : 'none';
+}
+
+// ── Reset ─────────────────────────────────────────────────────────────────────
+function resetApp() {
+  // State
+  absData = null; layoutData = null;
+  summaryResults = []; stdCurveData = {};
+  if (stdChartInst) { stdChartInst.destroy(); stdChartInst = null; }
+
+  // Upload cards
+  ['Abs','Lay'].forEach(t => {
+    document.getElementById(`card${t}`).classList.remove('loaded','drag-over');
+    const fn = document.getElementById(`fn${t}`);
+    fn.textContent = ''; fn.style.display = 'none';
+    const badge = document.getElementById(`badge${t}`);
+    badge.textContent = 'No file'; badge.classList.remove('loaded');
+    // Reset file input so same file can be re-uploaded
+    const dz = document.getElementById(`dz${t}`);
+    const input = dz.querySelector('input[type=file]');
+    if (input) input.value = '';
+  });
+
+  // Plate previews
+  document.getElementById('previewAbs').innerHTML =
+    '<div class="plate-empty" id="emptyAbs">plate preview appears here after upload</div>';
+  document.getElementById('previewLay').innerHTML =
+    '<div class="plate-empty" id="emptyLay">plate preview appears here after upload</div>';
+
+  // Config — restore defaults
+  document.getElementById('cfgWl').value    = '526';
+  document.getElementById('cfgDil').value   = '1';
+  document.getElementById('cfgStdRow').value= 'H';
+  document.getElementById('cfgStds').value  = '2000,1500,1000,750,500,250,125,25,0';
+  document.getElementById('cfgParent').value= 'Y293';
+  document.getElementById('cfgCv').value    = '10';
+
+  // Results & status
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('stdStats').innerHTML = '';
+  document.getElementById('summaryBody').innerHTML = '';
+  document.getElementById('boxChartWrap').innerHTML = '';
+  clearStatus();
+  checkReady();
+
+  // Scroll back to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Plate preview ─────────────────────────────────────────────────────────────
+function renderPlatePreview(data, containerId, emptyId, mode) {
+  const container = document.getElementById(containerId);
+  const empty = document.getElementById(emptyId);
+  if (empty) empty.style.display = 'none';
+
+  const ROWS = ['A','B','C','D','E','F','G','H'];
+  const grid = {};
+  data.forEach(row => {
+    const key = (row[0] || '').trim().toUpperCase();
+    if (ROWS.includes(key)) grid[key] = row.slice(1);
+  });
+
+  if (Object.keys(grid).length === 0) return;
+
+  // For absorbance: colour by heat map (low=light blue, high=deep blue)
+  // For layout: colour by unique sample name
+  let allVals = [], sampleColors = {};
+  if (mode === 'abs') {
+    ROWS.forEach(r => { if (grid[r]) grid[r].slice(0,12).forEach(v => { const n=parseFloat(v); if (!isNaN(n)) allVals.push(n); }); });
+  } else {
+    // Assign colours to unique sample names
+    const names = new Set();
+    ROWS.forEach(r => { if (grid[r]) grid[r].slice(0,12).forEach(v => { if (v && v.trim()) names.add(v.trim()); }); });
+    const palette = [
+      '#dbeafe','#d1fae5','#fef3c7','#fce7f3','#ede9fe','#e0f2fe',
+      '#dcfce7','#fff7ed','#f0fdf4','#fdf4ff','#ecfdf5','#eff6ff'
+    ];
+    const strokePalette = [
+      '#93c5fd','#6ee7b7','#fde68a','#f9a8d4','#c4b5fd','#7dd3fc',
+      '#86efac','#fdba74','#4ade80','#e879f9','#34d399','#60a5fa'
+    ];
+    let ci = 0;
+    names.forEach(name => {
+      sampleColors[name] = { bg: palette[ci % palette.length], border: strokePalette[ci % strokePalette.length] };
+      ci++;
+    });
+    // STD gets a distinct neutral
+    sampleColors['STD'] = { bg: '#f1f5f9', border: '#94a3b8' };
+  }
+
+  const minV = Math.min(...allVals), maxV = Math.max(...allVals);
+
+  let html = '<div class="plate-grid">';
+  // Column headers
+  html += '<div class="plate-col-labels"><div style="width:14px;flex-shrink:0;"></div>';
+  for (let c = 1; c <= 12; c++) html += `<div class="plate-col-label">${c}</div>`;
+  html += '</div>';
+
+  ROWS.forEach(r => {
+    html += `<div class="plate-row"><div class="plate-row-label">${r}</div>`;
+    const cells = grid[r] || [];
+    for (let c = 0; c < 12; c++) {
+      const raw = (cells[c] || '').toString().trim();
+      let bg = '#f8f8f8', border = '#e2e8f0', textColor = 'transparent', title = '';
+
+      if (mode === 'abs') {
+        const val = parseFloat(raw);
+        if (!isNaN(val)) {
+          const t = maxV > minV ? (val - minV) / (maxV - minV) : 0.5;
+          // Heat map: low = #eff6ff (very light blue), high = #1d4ed8 (deep blue)
+          const r2 = Math.round(239 + (29 - 239) * t);
+          const g2 = Math.round(246 + (78 - 246) * t);
+          const b2 = Math.round(255 + (216 - 255) * t);
+          bg = `rgb(${r2},${g2},${b2})`;
+          border = t > 0.5 ? '#93c5fd' : '#bfdbfe';
+          title = val.toFixed(4);
+        }
+      } else {
+        if (raw && sampleColors[raw]) {
+          bg = sampleColors[raw].bg;
+          border = sampleColors[raw].border;
+        }
+        title = raw || '';
+        // Show abbreviated text if short enough
+        if (raw && raw.length <= 4) textColor = '#374151';
+      }
+
+      html += `<div class="well" style="background:${bg};border-color:${border};color:${textColor};" title="${title}">${mode==='layout'&&raw.length<=4?raw:''}</div>`;
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // Legend for layout mode
+  if (mode === 'layout') {
+    const uniqueNames = Object.keys(sampleColors);
+    if (uniqueNames.length > 0) {
+      html += '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">';
+      uniqueNames.slice(0, 16).forEach(name => {
+        const c = sampleColors[name];
+        html += `<span style="display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:9px;color:var(--muted);">
+          <span style="width:9px;height:9px;border-radius:2px;background:${c.bg};border:1px solid ${c.border};flex-shrink:0;"></span>${name}
+        </span>`;
+      });
+      if (uniqueNames.length > 16) html += `<span style="font-family:var(--mono);font-size:9px;color:var(--muted);">+${uniqueNames.length-16} more</span>`;
+      html += '</div>';
+    }
+    // Absorbance scale bar
+  } else {
+    html += `<div style="display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+      <span style="font-family:var(--mono);font-size:9px;color:var(--muted);">${minV.toFixed(3)}</span>
+      <div style="flex:1;height:6px;border-radius:3px;background:linear-gradient(to right,#eff6ff,#1d4ed8);border:1px solid #bfdbfe;"></div>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--muted);">${maxV.toFixed(3)}</span>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--muted);">AU · hover for value</span>
+    </div>`;
+  }
+
+  container.innerHTML = html;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function showStatus(msg, type) {
   const el = document.getElementById('statusBar');
-  el.textContent = msg;
-  el.className = 'status-bar ' + type;
+  el.textContent = msg; el.className = 'status-bar ' + type;
 }
-function clearStatus() {
-  const el = document.getElementById('statusBar');
-  el.className = 'status-bar';
-}
+function clearStatus() { document.getElementById('statusBar').className = 'status-bar'; }
 
 function parseGrid(data) {
-  // Returns object: { A: [v1..v12], B: [...], ... }
   const rows = ['A','B','C','D','E','F','G','H'];
   const grid = {};
   data.forEach(row => {
     const key = (row[0] || '').trim().toUpperCase();
-    if (rows.includes(key)) {
-      grid[key] = row.slice(1).map(v => v.toString().trim());
-    }
+    if (rows.includes(key)) grid[key] = row.slice(1).map(v => v.toString().trim());
   });
   return grid;
 }
 
 function linReg(xs, ys) {
   const n = xs.length;
-  const sumX = xs.reduce((a,b) => a+b, 0);
-  const sumY = ys.reduce((a,b) => a+b, 0);
-  const sumXY = xs.reduce((a,x,i) => a + x*ys[i], 0);
-  const sumX2 = xs.reduce((a,x) => a + x*x, 0);
-  const slope = (n*sumXY - sumX*sumY) / (n*sumX2 - sumX*sumX);
-  const intercept = (sumY - slope*sumX) / n;
-  const yMean = sumY / n;
-  const ssTot = ys.reduce((a,y) => a + (y-yMean)**2, 0);
-  const ssRes = xs.reduce((a,x,i) => a + (ys[i] - (slope*x+intercept))**2, 0);
-  const r2 = 1 - ssRes/ssTot;
-  return { slope, intercept, r2 };
+  const sumX = xs.reduce((a,b)=>a+b,0), sumY = ys.reduce((a,b)=>a+b,0);
+  const sumXY = xs.reduce((a,x,i)=>a+x*ys[i],0), sumX2 = xs.reduce((a,x)=>a+x*x,0);
+  const slope = (n*sumXY-sumX*sumY)/(n*sumX2-sumX*sumX);
+  const intercept = (sumY-slope*sumX)/n;
+  const yMean = sumY/n;
+  const ssTot = ys.reduce((a,y)=>a+(y-yMean)**2,0);
+  const ssRes = xs.reduce((a,x,i)=>a+(ys[i]-(slope*x+intercept))**2,0);
+  return { slope, intercept, r2: 1-ssRes/ssTot };
 }
 
 // ── Main analysis ─────────────────────────────────────────────────────────────
@@ -923,13 +1038,9 @@ function runAnalysis() {
   const runBtn = document.getElementById('runBtn');
   runBtn.disabled = true;
   document.getElementById('runLabel').innerHTML = '<span class="spinner"></span> Running…';
-
   setTimeout(() => {
-    try {
-      _doAnalysis();
-    } catch(e) {
-      showStatus('Error: ' + e.message, 'error');
-    }
+    try { _doAnalysis(); }
+    catch(e) { showStatus('Error: ' + e.message, 'error'); }
     runBtn.disabled = false;
     document.getElementById('runLabel').textContent = 'Run analysis';
   }, 80);
@@ -941,41 +1052,28 @@ function _doAnalysis() {
   const stdConcs  = document.getElementById('cfgStds').value
     .split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
 
-  const absGrid    = parseGrid(absData);
-  const layoutGrid = parseGrid(layoutData);
-
-  if (!absGrid[stdRowKey]) throw new Error(`Row ${stdRowKey} not found in absorbance file. Check your CSV.`);
+  const absGrid = parseGrid(absData), layoutGrid = parseGrid(layoutData);
+  if (!absGrid[stdRowKey]) throw new Error(`Row ${stdRowKey} not found in absorbance file.`);
 
   const stdAbsRaw = absGrid[stdRowKey].slice(0, stdConcs.length).map(Number);
-  if (stdAbsRaw.some(isNaN)) throw new Error(`Non-numeric values found in standards row ${stdRowKey}.`);
+  if (stdAbsRaw.some(isNaN)) throw new Error(`Non-numeric values in standards row ${stdRowKey}.`);
 
-  // Blank: mean of all wells where concentration == 0
   const blankAbs = [];
   stdConcs.forEach((c, i) => { if (c === 0) blankAbs.push(stdAbsRaw[i]); });
-  // Also check cols after the declared standards for additional blank replicates
-  const extraCols = absGrid[stdRowKey].slice(stdConcs.length).map(Number).filter(v => !isNaN(v) && v > 0.01);
   if (blankAbs.length === 0) throw new Error('No 0 µg/mL standard found. Add a 0 to the concentrations list.');
   const blank = blankAbs.reduce((a,b)=>a+b,0) / blankAbs.length;
 
-  // Background-correct standards, exclude 0 from fit
   const stdAbsBg = stdAbsRaw.map(a => a - blank);
   const fitX = [], fitY = [];
-  stdConcs.forEach((c, i) => {
-    if (c > 0) { fitX.push(stdAbsBg[i]); fitY.push(c); }
-  });
+  stdConcs.forEach((c, i) => { if (c > 0) { fitX.push(stdAbsBg[i]); fitY.push(c); } });
 
-  const reg = linReg(fitX, fitY);
-  const { slope, intercept, r2 } = reg;
+  const { slope, intercept, r2 } = linReg(fitX, fitY);
+  if (r2 < 0.95) showStatus(`⚠ Low R² (${r2.toFixed(4)}) — check your standards.`, 'info');
 
-  if (r2 < 0.95) showStatus(`⚠ Low R² (${r2.toFixed(4)}) — check your standards before proceeding.`, 'info');
-
-  // Sample wells: all rows except stdRowKey
   const sampleRows = ['A','B','C','D','E','F','G','H'].filter(r => r !== stdRowKey);
   const wellResults = [];
-
   sampleRows.forEach(rowKey => {
-    const absRow    = absGrid[rowKey];
-    const layRow    = layoutGrid[rowKey];
+    const absRow = absGrid[rowKey], layRow = layoutGrid[rowKey];
     if (!absRow || !layRow) return;
     absRow.forEach((rawVal, ci) => {
       const sampleName = (layRow[ci] || '').trim();
@@ -983,30 +1081,22 @@ function _doAnalysis() {
       const absNum = parseFloat(rawVal);
       if (isNaN(absNum)) return;
       const bgCorr = absNum - blank;
-      const conc   = (slope * bgCorr + intercept) * dilution;
+      const conc = (slope * bgCorr + intercept) * dilution;
       wellResults.push({ well: `${rowKey}${ci+1}`, sample: sampleName, abs: absNum, bgCorr, conc });
     });
   });
 
-  if (wellResults.length === 0) throw new Error('No sample wells found. Check layout CSV row/column alignment.');
+  if (wellResults.length === 0) throw new Error('No sample wells found. Check layout CSV alignment.');
 
-  // Group by sample
   const groups = {};
-  wellResults.forEach(w => {
-    if (!groups[w.sample]) groups[w.sample] = [];
-    groups[w.sample].push(w.conc);
-  });
-
+  wellResults.forEach(w => { if (!groups[w.sample]) groups[w.sample] = []; groups[w.sample].push(w.conc); });
   summaryResults = Object.entries(groups).map(([sample, vals]) => {
-    const n    = vals.length;
-    const mean = vals.reduce((a,b)=>a+b,0) / n;
-    const sd   = n > 1 ? Math.sqrt(vals.reduce((a,v)=>a+(v-mean)**2,0)/(n-1)) : 0;
-    const cv   = mean !== 0 ? (sd/mean*100) : 0;
-    return { sample, n, mean, sd, cv };
+    const n = vals.length, mean = vals.reduce((a,b)=>a+b,0)/n;
+    const sd = n>1 ? Math.sqrt(vals.reduce((a,v)=>a+(v-mean)**2,0)/(n-1)) : 0;
+    return { sample, n, mean, sd, cv: mean !== 0 ? sd/mean*100 : 0 };
   });
 
   stdCurveData = { stdConcs, stdAbsBg, fitX, fitY, slope, intercept, r2, blank, wellResults };
-
   renderResults(dilution);
 }
 
@@ -1014,21 +1104,21 @@ function renderResults(dilution) {
   document.getElementById('results').style.display = 'block';
   document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  const { slope, intercept, r2, blank, stdConcs, stdAbsBg, fitX, fitY } = stdCurveData;
+  const { slope, intercept, r2, blank } = stdCurveData;
   const wl = document.getElementById('cfgWl').value;
+  const cvThreshold = parseFloat(document.getElementById('cfgCv').value) || 10;
+  const nFlagged = summaryResults.filter(s => s.cv > cvThreshold).length;
 
-  // Stat cards
-  const nFlagged = summaryResults.filter(s => s.cv > 10).length;
   document.getElementById('stdStats').innerHTML = `
-    <div class="stat-card ${r2 >= 0.99 ? 'good' : r2 >= 0.97 ? '' : 'warn'}">
+    <div class="stat-card ${r2>=0.99?'good':r2>=0.97?'':'warn'}">
       <div class="s-label">R²</div>
       <div class="s-value">${r2.toFixed(4)}</div>
-      <div class="s-sub">${r2 >= 0.99 ? 'Excellent fit' : r2 >= 0.97 ? 'Good fit' : 'Check standards'}</div>
+      <div class="s-sub">${r2>=0.99?'Excellent fit':r2>=0.97?'Good fit':'Check standards'}</div>
     </div>
     <div class="stat-card">
-      <div class="s-label">Blank absorbance</div>
+      <div class="s-label">Blank</div>
       <div class="s-value">${blank.toFixed(4)}</div>
-      <div class="s-sub">Mean of 0 µg/mL reps</div>
+      <div class="s-sub">Mean A₀ (AU)</div>
     </div>
     <div class="stat-card">
       <div class="s-label">Slope</div>
@@ -1040,108 +1130,80 @@ function renderResults(dilution) {
       <div class="s-value">${summaryResults.length}</div>
       <div class="s-sub">${summaryResults.reduce((a,s)=>a+s.n,0)} total wells</div>
     </div>
-    <div class="stat-card ${nFlagged > 0 ? 'warn' : 'good'}">
-      <div class="s-label">CV > 10%</div>
+    <div class="stat-card ${nFlagged>0?'warn':'good'}">
+      <div class="s-label">CV &gt; ${cvThreshold}%</div>
       <div class="s-value">${nFlagged}</div>
-      <div class="s-sub">${nFlagged === 0 ? 'All pass' : `${nFlagged} sample${nFlagged>1?'s':''} flagged`}</div>
+      <div class="s-sub">${nFlagged===0?'All pass':`${nFlagged} flagged`}</div>
     </div>
     <div class="stat-card">
-      <div class="s-label">Dilution factor</div>
+      <div class="s-label">Dilution</div>
       <div class="s-value">${dilution}×</div>
-      <div class="s-sub">Applied to all samples</div>
-    </div>
-  `;
+      <div class="s-sub">Applied to all</div>
+    </div>`;
 
   document.getElementById('eqLabel').textContent = `y = ${slope.toFixed(2)}x + ${intercept.toFixed(2)}`;
   document.getElementById('r2Label').textContent  = `R² = ${r2.toFixed(4)}`;
 
-  // ── Standard curve chart ──────────────────────────────────────────────────
+  // Standard curve chart — light mode colours
   if (stdChartInst) stdChartInst.destroy();
+  const { fitX, fitY } = stdCurveData;
   const xFit = [Math.min(...fitX)*0.98, Math.max(...fitX)*1.02];
   stdChartInst = new Chart(document.getElementById('stdChart'), {
     type: 'scatter',
     data: {
       datasets: [
-        {
-          label: 'Standards',
-          data: fitX.map((x,i) => ({ x, y: fitY[i] })),
-          backgroundColor: '#4f8ef7',
-          borderColor: '#3a7de8',
-          borderWidth: 1,
-          pointRadius: 6,
-          order: 2
-        },
-        {
-          label: 'Fit',
-          data: xFit.map(x => ({ x, y: slope*x+intercept })),
-          type: 'line',
-          borderColor: '#3dd6a3',
-          borderWidth: 2,
-          pointRadius: 0,
-          fill: false,
-          order: 1
-        }
+        { label:'Standards', data: fitX.map((x,i)=>({x,y:fitY[i]})),
+          backgroundColor:'#2563eb', borderColor:'#1d4ed8', borderWidth:1, pointRadius:6, order:2 },
+        { label:'Fit', data: xFit.map(x=>({x,y:slope*x+intercept})),
+          type:'line', borderColor:'#059669', borderWidth:2, pointRadius:0, fill:false, order:1 }
       ]
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false },
-        tooltip: { callbacks: { label: c => c.datasetIndex===0 ? `Abs: ${c.parsed.x.toFixed(4)} → ${c.parsed.y} µg/mL` : null } }
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{callbacks:{label:c=>c.datasetIndex===0?`Abs: ${c.parsed.x.toFixed(4)} → ${c.parsed.y} µg/mL`:null}}
       },
-      scales: {
-        x: { title: { display: true, text: `A${wl} (blank-corrected)`, color: '#7a82a0', font:{size:11} },
-             grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#7a82a0' } },
-        y: { title: { display: true, text: 'BSA (µg/mL)', color: '#7a82a0', font:{size:11} },
-             grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#7a82a0' } }
+      scales:{
+        x:{ title:{display:true,text:`A${wl} (blank-corrected)`,color:'#78716c',font:{size:10}},
+            grid:{color:'rgba(0,0,0,0.05)'}, ticks:{color:'#78716c',font:{size:10}} },
+        y:{ title:{display:true,text:'BSA (µg/mL)',color:'#78716c',font:{size:10}},
+            grid:{color:'rgba(0,0,0,0.05)'}, ticks:{color:'#78716c',font:{size:10}} }
       }
     }
   });
 
-  // ── Box plot (SVG, per-well data) ─────────────────────────────────────────
   renderBoxPlot();
 
-  // ── Summary table ─────────────────────────────────────────────────────────
-  const tbody = document.getElementById('summaryBody');
-  tbody.innerHTML = summaryResults.map(s => `
+  const cvThresh = parseFloat(document.getElementById('cfgCv').value) || 10;
+  document.getElementById('summaryBody').innerHTML = summaryResults.map(s => `
     <tr>
       <td class="td-sample">${s.sample}</td>
       <td>${s.n}</td>
       <td>${s.mean.toFixed(2)}</td>
       <td>${s.sd.toFixed(2)}</td>
       <td>${s.cv.toFixed(1)}</td>
-      <td>${s.cv > 10
-        ? '<span class="badge badge-warn">⚠ CV &gt; 10%</span>'
-        : '<span class="badge badge-ok">✓ Pass</span>'}</td>
+      <td>${s.cv>cvThresh
+        ?'<span class="badge badge-warn">⚠ CV &gt; '+cvThresh+'%</span>'
+        :'<span class="badge badge-ok">✓ Pass</span>'}</td>
     </tr>`).join('');
 }
 
-// ── Vertical box plot (SVG) ────────────────────────────────────────────────────
+// ── Vertical box plot (SVG) — light mode ──────────────────────────────────────
 function renderBoxPlot() {
   const parentStrain = (document.getElementById('cfgParent').value || '').trim();
   const dateStr = today();
 
-  // ── 1. Build per-sample value map ──────────────────────────────────────────
   const groupMap = {};
   stdCurveData.wellResults.forEach(w => {
     if (!groupMap[w.sample]) groupMap[w.sample] = [];
     groupMap[w.sample].push(w.conc);
   });
 
-  // ── 2. Natural sort all sample names, then put parent first ───────────────
-  function naturalKey(s) {
-    // Split into alpha/numeric chunks for proper natural sort
-    return s.replace(/(\d+)/g, n => n.padStart(10, '0'));
-  }
+  function naturalKey(s) { return s.replace(/(\d+)/g, n => n.padStart(10,'0')); }
   const allSamples = Object.keys(groupMap);
-  const sorted = [...allSamples].sort((a, b) => naturalKey(a).localeCompare(naturalKey(b)));
-  // Parent goes first; everything else in natural order
-  const ordered = [
-    ...sorted.filter(s => s === parentStrain),
-    ...sorted.filter(s => s !== parentStrain),
-  ];
+  const sorted = [...allSamples].sort((a,b) => naturalKey(a).localeCompare(naturalKey(b)));
+  const ordered = [...sorted.filter(s=>s===parentStrain), ...sorted.filter(s=>s!==parentStrain)];
 
-  // ── 3. Classify group for colouring ───────────────────────────────────────
-  // Detect c1 / c2 suffix generically (e.g. ",c1", "_c1", "-c1", " c1")
   function classifyGroup(name) {
     if (name === parentStrain) return 'parent';
     if (/[,_\- ]c1$/i.test(name)) return 'c1';
@@ -1149,414 +1211,253 @@ function renderBoxPlot() {
     return 'other';
   }
 
-  // ── 4. Compute box stats per sample ───────────────────────────────────────
-  const groups = ordered.map(sample => {
-    const vals = [...groupMap[sample]].sort((a, b) => a - b);
-    const n = vals.length;
-    const q1  = vals[Math.floor((n - 1) * 0.25)];
-    const med = n % 2 === 0 ? (vals[n/2-1] + vals[n/2]) / 2 : vals[(n-1)/2];
-    const q3  = vals[Math.floor((n - 1) * 0.75)];
-    const iqr = q3 - q1;
-    const lo  = Math.max(vals[0],    q1 - 1.5 * iqr);
-    const hi  = Math.min(vals[n-1],  q3 + 1.5 * iqr);
-    const mean = vals.reduce((a, b) => a + b, 0) / n;
-    const sd   = n > 1 ? Math.sqrt(vals.reduce((a, v) => a + (v - mean) ** 2, 0) / (n - 1)) : 0;
-    const cv   = mean ? (sd / mean) * 100 : 0;
-    const outliers = vals.filter(v => v < lo || v > hi);
-    return { sample, vals, n, q1, med, q3, lo, hi, mean, sd, cv, outliers, grp: classifyGroup(sample) };
-  });
-
-  // ── 5. Reference line from parent median ──────────────────────────────────
-  const parentGroup = groups.find(g => g.sample === parentStrain);
-  const refVal = parentGroup ? parentGroup.med : null;
-
-  // ── 6. Colour palette (grp → colours) ─────────────────────────────────────
+  // Light-mode colour palette
   const COLORS = {
-    parent: { fill: 'rgba(155,155,165,0.38)', stroke: '#9b9ba5', dot: '#c4c4cc' },
-    c1:     { fill: 'rgba(79,142,247,0.40)',  stroke: '#4f8ef7', dot: '#7ab0f8' },
-    c2:     { fill: 'rgba(61,214,163,0.35)',  stroke: '#3dd6a3', dot: '#5ee8bb' },
-    other:  { fill: 'rgba(245,166,35,0.42)',  stroke: '#f5a623', dot: '#f7c86a' },
+    parent: { fill:'rgba(100,116,139,0.18)', stroke:'#64748b', dot:'#94a3b8' },
+    c1:     { fill:'rgba(37,99,235,0.14)',   stroke:'#2563eb', dot:'#60a5fa' },
+    c2:     { fill:'rgba(5,150,105,0.14)',   stroke:'#059669', dot:'#34d399' },
+    other:  { fill:'rgba(217,119,6,0.14)',   stroke:'#d97706', dot:'#fbbf24' },
   };
-
-  // ── 7. Y-axis range: generous padding so dots never clip ──────────────────
-  const allVals = groups.flatMap(g => g.vals);
-  const rawMin = Math.min(...allVals);
-  const rawMax = Math.max(...allVals);
-  const span   = rawMax - rawMin;
-  const yPad   = Math.max(span * 0.22, 60);   // at least 60 µg/mL headroom each side
-  const yMin   = Math.floor((rawMin - yPad) / 50) * 50;
-  const yMax   = Math.ceil ((rawMax + yPad) / 50) * 50;
-
-  // ── 8. SVG layout constants ────────────────────────────────────────────────
-  const colW  = 52;    // wider columns → more breathing room
-  const padL  = 58;    // y-axis area
-  const padR  = 24;
-  const padT  = 96;    // title + legend + subtitle
-  const padB  = 80;    // rotated x-labels
-  const plotH = 300;   // slightly shorter for wider feel
-  const N     = groups.length;
-  const W     = padL + N * colW + padR;
-  const H     = padT + plotH + padB;
-
-  const toY = v => padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
-  const cx  = i => padL + i * colW + colW / 2;
-
-  // ── 9. Grid & axes ────────────────────────────────────────────────────────
-  const tickStep = 50;
-  let grid = '', yLabels = '';
-  for (let v = yMin; v <= yMax; v += tickStep) {
-    const y = toY(v);
-    grid    += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
-    yLabels += `<text x="${padL-7}" y="${y+4}" text-anchor="end" fill="#7a82a0" font-size="10" font-family="DM Mono,monospace">${v}</text>`;
-  }
-  grid += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+plotH}" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>`;
-  grid += `<line x1="${padL}" y1="${padT+plotH}" x2="${W-padR}" y2="${padT+plotH}" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>`;
-
-  const yAxisLabel = `<text transform="rotate(-90)" x="${-(padT+plotH/2)}" y="14" text-anchor="middle" fill="#7a82a0" font-size="11" font-family="DM Mono,monospace">Protein (µg/mL)</text>`;
-
-  // ── 10. Parent median dashed reference line ────────────────────────────────
-  let refLine = '';
-  if (refVal !== null) {
-    const ry = toY(refVal);
-    refLine = `<line x1="${padL}" y1="${ry}" x2="${W-padR}" y2="${ry}" stroke="#aaaaaa" stroke-width="1.3" stroke-dasharray="6,4" opacity="0.65"/>`;
-  }
-
-  // ── 11. Boxes, dots, labels ───────────────────────────────────────────────
-  const BHW  = 14;   // box half-width
-  const JITTER = [-4, 0, 4, -7, 7, -2, 2, -5, 5, 1, -1, 6, -6, 3, -3];
-  let boxes = '', xLabels = '';
-
-  groups.forEach((g, i) => {
-    const x = cx(i);
-    const C = COLORS[g.grp] || COLORS.other;
-
-    // Whisker spine
-    boxes += `<line x1="${x}" y1="${toY(g.hi)}" x2="${x}" y2="${toY(g.lo)}" stroke="${C.stroke}" stroke-width="1.4" opacity="0.5"/>`;
-    // Whisker caps
-    [g.lo, g.hi].forEach(v => {
-      boxes += `<line x1="${x-6}" y1="${toY(v)}" x2="${x+6}" y2="${toY(v)}" stroke="${C.stroke}" stroke-width="1.4"/>`;
-    });
-    // IQR box
-    const bTop = toY(g.q3), bBot = toY(g.q1);
-    boxes += `<rect x="${x-BHW}" y="${bTop}" width="${BHW*2}" height="${Math.max(bBot-bTop,1)}" fill="${C.fill}" stroke="${C.stroke}" stroke-width="1.5" rx="2"/>`;
-    // Median line
-    boxes += `<line x1="${x-BHW}" y1="${toY(g.med)}" x2="${x+BHW}" y2="${toY(g.med)}" stroke="${C.stroke}" stroke-width="2.2"/>`;
-
-    // Individual replicate dots (jittered)
-    g.vals.forEach((v, vi) => {
-      const jx = x + JITTER[vi % JITTER.length];
-      boxes += `<circle cx="${jx}" cy="${toY(v)}" r="3" fill="${C.dot}" opacity="0.88"/>`;
-    });
-
-    // Outlier rings
-    g.outliers.forEach(v => {
-      boxes += `<circle cx="${x}" cy="${toY(v)}" r="4.5" fill="none" stroke="${C.stroke}" stroke-width="1.5"/>`;
-    });
-
-    // Hover tooltip
-    const tip = `${g.sample}\nn = ${g.n}  |  median = ${g.med.toFixed(1)} µg/mL\nQ1 = ${g.q1.toFixed(1)}   Q3 = ${g.q3.toFixed(1)}\nCV = ${g.cv.toFixed(1)}%`;
-    boxes += `<rect x="${x-colW/2}" y="${padT}" width="${colW}" height="${plotH}" fill="transparent"><title>${tip}</title></rect>`;
-
-    // X-axis label — strip common parent prefix for readability
-    const lbl = parentStrain ? g.sample.replace(parentStrain + '+', '') : g.sample;
-    const lblColor = g.grp === 'parent' ? '#9b9ba5' : g.cv > 10 ? '#f5a623' : '#c8cce0';
-    xLabels += `<text transform="rotate(-40,${x},${padT+plotH+10})" x="${x}" y="${padT+plotH+10}" text-anchor="end" fill="${lblColor}" font-size="10" font-family="DM Sans,sans-serif">${lbl}</text>`;
-  });
-
-  // ── 12. Legend + title ────────────────────────────────────────────────────
-  // Build legend entries dynamically from groups actually present
-  const grpsPresent = [...new Set(groups.map(g => g.grp))];
-  const LEG_DEFS = {
-    parent: g => `${g.sample} (parent)`,
-    c1:     _  => 'Colony 1',
-    c2:     _  => 'Colony 2',
-    other:  _  => 'Other strains',
-  };
-  const legEntries = [];
-  grpsPresent.forEach(grp => {
-    const ex = groups.find(g => g.grp === grp);
-    legEntries.push({ grp, label: LEG_DEFS[grp] ? LEG_DEFS[grp](ex) : grp });
-  });
-  // Always add dashed ref line entry if parent exists
-  if (parentGroup) legEntries.push({ grp: '__ref__', label: `${parentStrain} median` });
-
-  const legX = padL, legY0 = 14;
-  let legend = '';
-  legend += `<text x="${legX}" y="${legY0}" font-size="13" font-weight="600" fill="#e8eaf2" font-family="DM Sans,sans-serif">Protein concentration by strain — BCA ${dateStr}</text>`;
-  legend += `<text x="${legX}" y="${legY0+17}" font-size="9.5" fill="#7a82a0" font-family="DM Mono,monospace">Box = IQR, line = median, whiskers = min/max, dots = individual replicates${parentGroup ? `. Dashed = ${parentStrain} median.` : '.'}</text>`;
-
-  let lx = legX;
-  legEntries.forEach(entry => {
-    if (entry.grp === '__ref__') {
-      // Dashed line swatch
-      legend += `<line x1="${lx}" y1="${legY0+35}" x2="${lx+22}" y2="${legY0+35}" stroke="#aaaaaa" stroke-width="1.5" stroke-dasharray="5,3"/>`;
-      legend += `<text x="${lx+27}" y="${legY0+40}" fill="#c8cce0" font-size="10" font-family="DM Sans,sans-serif">${entry.label}</text>`;
-      lx += entry.label.length * 6.4 + 42;
-    } else {
-      const C = COLORS[entry.grp] || COLORS.other;
-      legend += `<rect x="${lx}" y="${legY0+28}" width="14" height="14" rx="2" fill="${C.fill}" stroke="${C.stroke}" stroke-width="1.5"/>`;
-      legend += `<text x="${lx+19}" y="${legY0+40}" fill="#c8cce0" font-size="10" font-family="DM Sans,sans-serif">${entry.label}</text>`;
-      lx += entry.label.length * 6.4 + 34;
-    }
-  });
-
-  // ── 13. Assemble SVG ──────────────────────────────────────────────────────
-  const minW = Math.max(W, 640);
-  const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg" style="display:block;min-width:${minW}px;">
-    ${yAxisLabel}${grid}${refLine}${boxes}${xLabels}${yLabels}${legend}
-  </svg>`;
-
-  const wrap = document.getElementById('boxChartWrap');
-  wrap.style.height = (H + 10) + 'px';
-  wrap.style.overflowX = 'auto';
-  wrap.innerHTML = svg;
-}
-
-// ── Export CSV ────────────────────────────────────────────────────────────────
-function exportCSV() {
-  const rows = [['Sample','N','Mean_ugmL','SD_ugmL','CV_pct']];
-  summaryResults.forEach(s => rows.push([s.sample, s.n, s.mean.toFixed(2), s.sd.toFixed(2), s.cv.toFixed(1)]));
-  const csv = rows.map(r => r.join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-  a.download = `BCA_results_${today()}.csv`;
-  a.click();
-}
-
-// ── Export XLSX ───────────────────────────────────────────────────────────────
-function exportXLSX() {
-  const { slope, intercept, r2, blank, stdConcs, stdAbsBg, wellResults } = stdCurveData;
-  const wl = document.getElementById('cfgWl').value;
-  const wb = XLSX.utils.book_new();
-  const dateStr = today();
-
-  // ── Summary sheet ──
-  const expLabel = `BCA Protein Quantification — ${dateStr}`;
-  const stdLine  = `Standard curve: y = ${slope.toFixed(2)}x + ${intercept.toFixed(2)}  |  R² = ${r2.toFixed(4)}  |  Blank = ${blank.toFixed(4)} AU  |  Dilution factor = ${document.getElementById('cfgDil').value} (neat)`;
-  const sumRows = [
-    [expLabel],
-    [stdLine],
-    [],
-    ['Sample', 'N (replicates)', 'Mean [protein] (µg/mL)', 'SD (µg/mL)', 'CV (%)', 'Flag']
-  ];
-  summaryResults.forEach(s => sumRows.push([
-    s.sample, s.n, +s.mean.toFixed(2), +s.sd.toFixed(2), +s.cv.toFixed(1),
-    s.cv > 10 ? '⚠ CV >10%' : ''
-  ]));
-  sumRows.push([], [], ['Protein concentration by sample (box plot)']);
-  const wsSummary = XLSX.utils.aoa_to_sheet(sumRows);
-  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
-
-  // ── Per-Well Data sheet ──
-  const wellData = [['Well', 'Sample', `Absorbance ${wl}nm`, 'Abs (blank-corrected)', 'Protein (µg/mL)']];
-  wellResults.forEach(w => wellData.push([
-    w.well, w.sample, +w.abs.toFixed(4), +w.bgCorr.toFixed(4), +w.conc.toFixed(2)
-  ]));
-  const wsWells = XLSX.utils.aoa_to_sheet(wellData);
-  XLSX.utils.book_append_sheet(wb, wsWells, 'Per-Well Data');
-
-  // ── Standard Curve sheet ──
-  const stdRows = [['BCA Standard Curve Data','','','',''],[]
-    ,['Standard ID','BSA (µg/mL)',`Absorbance ${wl}nm`,'Abs (blank-corrected)','Fitted Conc (µg/mL)']];
-  const stdIds = ['A','B','C','D','E','F','G','H','I'];
-  stdConcs.forEach((c,i) => {
-    const absRaw = stdAbsBg[i]+blank;
-    const fitted = c===0 ? 'n/a (blank)' : +(slope*stdAbsBg[i]+intercept).toFixed(2);
-    stdRows.push([stdIds[i]||String(i+1), c, +absRaw.toFixed(4), +stdAbsBg[i].toFixed(4), fitted]);
-  });
-  stdRows.push([],[],['Regression Statistics']);
-  stdRows.push(['Slope (µg·mL⁻¹ / AU)', +slope.toFixed(4)]);
-  stdRows.push(['Intercept (µg/mL)',     +intercept.toFixed(4)]);
-  stdRows.push(['R²',                    +r2.toFixed(5)]);
-  stdRows.push(['Blank absorbance (mean)',+blank.toFixed(4)]);
-  stdRows.push(['Points used', `${stdConcs.filter(c=>c>0).length} (0 µg/mL excluded from fit)`]);
-  stdRows.push([],['Standard curve plot']);
-  const wsStd = XLSX.utils.aoa_to_sheet(stdRows);
-  XLSX.utils.book_append_sheet(wb, wsStd, 'Standard Curve');
-
-  // ── Box Plot Image sheet — render to canvas then embed ──
-  try {
-    const pngB64 = renderBoxPlotToCanvas();
-    if (pngB64) {
-      const wsImg = XLSX.utils.aoa_to_sheet([['Box Plot — Protein concentration by strain']]);
-      // SheetJS image embedding via !images extension
-      if (!wsImg['!images']) wsImg['!images'] = [];
-      wsImg['!images'].push({
-        name: 'boxplot.png',
-        data: pngB64.split(',')[1],
-        opts: { base64: true },
-        position: { type: 'twoCellAnchor', attrs: { editAs: 'oneCell' },
-          from: { col: 0, colOff: 0, row: 1, rowOff: 0 },
-          to:   { col: 12, colOff: 0, row: 30, rowOff: 0 } }
-      });
-      XLSX.utils.book_append_sheet(wb, wsImg, 'Box Plot');
-    }
-  } catch(e) { /* image embedding not supported in all browsers */ }
-
-  XLSX.writeFile(wb, `BCA_Analysis_${dateStr}.xlsx`);
-}
-
-// Render the box plot to an offscreen canvas and return a PNG data URL
-function renderBoxPlotToCanvas() {
-  const parentStrain = (document.getElementById('cfgParent').value || '').trim();
-
-  const groupMap = {};
-  stdCurveData.wellResults.forEach(w => {
-    if (!groupMap[w.sample]) groupMap[w.sample] = [];
-    groupMap[w.sample].push(w.conc);
-  });
-
-  function naturalKey(s) { return s.replace(/(\d+)/g, n => n.padStart(10, '0')); }
-  function classifyGroup(name) {
-    if (name === parentStrain) return 'parent';
-    if (/[,_\- ]c1$/i.test(name)) return 'c1';
-    if (/[,_\- ]c2$/i.test(name)) return 'c2';
-    return 'other';
-  }
-  const COLORS = {
-    parent: {fill:'rgba(155,155,165,0.38)',stroke:'#9b9ba5',dot:'#c4c4cc'},
-    c1:     {fill:'rgba(79,142,247,0.40)', stroke:'#4f8ef7',dot:'#7ab0f8'},
-    c2:     {fill:'rgba(61,214,163,0.35)', stroke:'#3dd6a3',dot:'#5ee8bb'},
-    other:  {fill:'rgba(245,166,35,0.42)', stroke:'#f5a623',dot:'#f7c86a'},
-  };
-
-  const allSamples = Object.keys(groupMap);
-  const sortedNames = [...allSamples].sort((a,b) => naturalKey(a).localeCompare(naturalKey(b)));
-  const ordered = [
-    ...sortedNames.filter(s => s === parentStrain),
-    ...sortedNames.filter(s => s !== parentStrain),
-  ];
 
   const groups = ordered.map(sample => {
     const vals = [...groupMap[sample]].sort((a,b)=>a-b);
     const n = vals.length;
     const q1 = vals[Math.floor((n-1)*0.25)];
-    const med= n%2===0?(vals[n/2-1]+vals[n/2])/2:vals[(n-1)/2];
+    const med = n%2===0?(vals[n/2-1]+vals[n/2])/2:vals[(n-1)/2];
     const q3 = vals[Math.floor((n-1)*0.75)];
-    const iqr=q3-q1;
-    const lo=Math.max(vals[0],q1-1.5*iqr);
-    const hi=Math.min(vals[n-1],q3+1.5*iqr);
-    return {sample,vals,q1,med,q3,lo,hi,grp:classifyGroup(sample)};
+    const iqr = q3-q1;
+    const lo = Math.max(vals[0], q1-1.5*iqr);
+    const hi = Math.min(vals[n-1], q3+1.5*iqr);
+    const mean = vals.reduce((a,b)=>a+b,0)/n;
+    const sd = n>1?Math.sqrt(vals.reduce((a,v)=>a+(v-mean)**2,0)/(n-1)):0;
+    const cv = mean?(sd/mean)*100:0;
+    const outliers = vals.filter(v=>v<lo||v>hi);
+    return { sample, vals, n, q1, med, q3, lo, hi, mean, sd, cv, outliers, grp: classifyGroup(sample) };
   });
 
+  const parentGroup = groups.find(g => g.sample === parentStrain);
+  const refVal = parentGroup ? parentGroup.med : null;
+
   const allVals = groups.flatMap(g=>g.vals);
-  const rawMin=Math.min(...allVals), rawMax=Math.max(...allVals);
-  const span=rawMax-rawMin, yPad=Math.max(span*0.22,60);
-  const yMin=Math.floor((rawMin-yPad)/50)*50;
-  const yMax=Math.ceil((rawMax+yPad)/50)*50;
+  const rawMin = Math.min(...allVals), rawMax = Math.max(...allVals);
+  const span = rawMax-rawMin, yPad = Math.max(span*0.22, 60);
+  const yMin = Math.floor((rawMin-yPad)/50)*50;
+  const yMax = Math.ceil((rawMax+yPad)/50)*50;
 
-  const DPR=2, W=1500, H=500;
-  const cv = document.createElement('canvas');
-  cv.width=W*DPR; cv.height=H*DPR;
-  const ctx = cv.getContext('2d');
-  ctx.scale(DPR,DPR);
-  ctx.fillStyle='#0f1117'; ctx.fillRect(0,0,W,H);
-
-  const padL=58, padR=24, padT=90, padB=80;
-  const plotH=H-padT-padB;
-  const N=groups.length;
-  const colW=(W-padL-padR)/N;
+  const colW=52, padL=58, padR=24, padT=96, padB=80, plotH=300;
+  const N=groups.length, W=padL+N*colW+padR, H=padT+plotH+padB;
   const toY = v => padT+plotH-((v-yMin)/(yMax-yMin))*plotH;
   const cx  = i => padL+i*colW+colW/2;
 
-  // Grid
-  for(let v=yMin;v<=yMax;v+=50){
+  // Grid & axes
+  let grid='', yLabels='';
+  for (let v=yMin; v<=yMax; v+=50) {
     const y=toY(v);
-    ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke();
-    ctx.fillStyle='#7a82a0'; ctx.font='11px monospace';
-    ctx.textAlign='right'; ctx.fillText(v,padL-7,y+4);
+    grid    += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="rgba(0,0,0,0.06)" stroke-width="1"/>`;
+    yLabels += `<text x="${padL-7}" y="${y+4}" text-anchor="end" fill="#78716c" font-size="10" font-family="IBM Plex Mono,monospace">${v}</text>`;
   }
-  ctx.strokeStyle='rgba(255,255,255,0.14)'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(padL,padT); ctx.lineTo(padL,padT+plotH);
-  ctx.lineTo(W-padR,padT+plotH); ctx.stroke();
+  grid += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+plotH}" stroke="rgba(0,0,0,0.15)" stroke-width="1"/>`;
+  grid += `<line x1="${padL}" y1="${padT+plotH}" x2="${W-padR}" y2="${padT+plotH}" stroke="rgba(0,0,0,0.15)" stroke-width="1"/>`;
+  const yAxisLabel = `<text transform="rotate(-90)" x="${-(padT+plotH/2)}" y="14" text-anchor="middle" fill="#78716c" font-size="11" font-family="IBM Plex Mono,monospace">Protein (µg/mL)</text>`;
 
-  // Parent ref line
-  const parentG=groups.find(g=>g.sample===parentStrain);
-  if(parentG){
-    const ry=toY(parentG.med);
-    ctx.strokeStyle='rgba(170,170,170,0.6)'; ctx.lineWidth=1.3;
-    ctx.setLineDash([6,4]); ctx.beginPath();
-    ctx.moveTo(padL,ry); ctx.lineTo(W-padR,ry); ctx.stroke();
-    ctx.setLineDash([]);
+  // Reference line
+  let refLine='';
+  if (refVal!==null) {
+    const ry=toY(refVal);
+    refLine=`<line x1="${padL}" y1="${ry}" x2="${W-padR}" y2="${ry}" stroke="#64748b" stroke-width="1.3" stroke-dasharray="6,4" opacity="0.5"/>`;
   }
 
   // Boxes
-  const JITTER=[-0.22,-0.08,0.10,0.24,-0.15,0.04,-0.28,0.18,0.0,-0.11,0.20,-0.05,0.28,-0.20,0.08];
-  groups.forEach((g,i)=>{
-    const C=COLORS[g.grp]||COLORS.other;
-    const x=cx(i);
-    const bw=colW*0.50;
-    ctx.strokeStyle=C.stroke; ctx.lineWidth=1.4; ctx.globalAlpha=0.5;
-    ctx.beginPath(); ctx.moveTo(x,toY(g.hi)); ctx.lineTo(x,toY(g.lo)); ctx.stroke();
-    ctx.globalAlpha=1;
+  const BHW=14;
+  const JITTER=[-4,0,4,-7,7,-2,2,-5,5,1,-1,6,-6,3,-3];
+  let boxes='', xLabels='';
+  groups.forEach((g,i) => {
+    const x=cx(i), C=COLORS[g.grp]||COLORS.other;
+    boxes+=`<line x1="${x}" y1="${toY(g.hi)}" x2="${x}" y2="${toY(g.lo)}" stroke="${C.stroke}" stroke-width="1.4" opacity="0.45"/>`;
     [g.lo,g.hi].forEach(v=>{
-      ctx.beginPath(); ctx.moveTo(x-bw*0.26,toY(v)); ctx.lineTo(x+bw*0.26,toY(v)); ctx.stroke();
+      boxes+=`<line x1="${x-6}" y1="${toY(v)}" x2="${x+6}" y2="${toY(v)}" stroke="${C.stroke}" stroke-width="1.4"/>`;
     });
-    ctx.fillStyle=C.fill; ctx.strokeStyle=C.stroke; ctx.lineWidth=1.5;
-    const bh=Math.max(toY(g.q1)-toY(g.q3),1);
-    ctx.beginPath(); ctx.rect(x-bw/2,toY(g.q3),bw,bh); ctx.fill(); ctx.stroke();
-    ctx.strokeStyle=C.stroke; ctx.lineWidth=2.2;
-    ctx.beginPath(); ctx.moveTo(x-bw/2,toY(g.med)); ctx.lineTo(x+bw/2,toY(g.med)); ctx.stroke();
-    g.vals.forEach((v,vi)=>{
-      const jx=x+JITTER[vi%JITTER.length]*bw;
-      ctx.fillStyle=C.dot; ctx.globalAlpha=0.88;
-      ctx.beginPath(); ctx.arc(jx,toY(v),2.8,0,Math.PI*2); ctx.fill();
-      ctx.globalAlpha=1;
+    const bTop=toY(g.q3),bBot=toY(g.q1);
+    boxes+=`<rect x="${x-BHW}" y="${bTop}" width="${BHW*2}" height="${Math.max(bBot-bTop,1)}" fill="${C.fill}" stroke="${C.stroke}" stroke-width="1.5" rx="2"/>`;
+    boxes+=`<line x1="${x-BHW}" y1="${toY(g.med)}" x2="${x+BHW}" y2="${toY(g.med)}" stroke="${C.stroke}" stroke-width="2.2"/>`;
+    g.vals.forEach((v,vi) => {
+      boxes+=`<circle cx="${x+JITTER[vi%JITTER.length]}" cy="${toY(v)}" r="3" fill="${C.dot}" opacity="0.85"/>`;
     });
+    g.outliers.forEach(v => {
+      boxes+=`<circle cx="${x}" cy="${toY(v)}" r="4.5" fill="none" stroke="${C.stroke}" stroke-width="1.5"/>`;
+    });
+    const tip=`${g.sample}\nn = ${g.n}  |  median = ${g.med.toFixed(1)} µg/mL\nQ1 = ${g.q1.toFixed(1)}   Q3 = ${g.q3.toFixed(1)}\nCV = ${g.cv.toFixed(1)}%`;
+    boxes+=`<rect x="${x-colW/2}" y="${padT}" width="${colW}" height="${plotH}" fill="transparent"><title>${tip}</title></rect>`;
     const lbl=parentStrain?g.sample.replace(parentStrain+'+',''):g.sample;
-    ctx.save();
-    ctx.translate(x,padT+plotH+10);
-    ctx.rotate(-Math.PI*40/180);
-    ctx.fillStyle=g.grp==='parent'?'#9b9ba5':'#c8cce0';
-    ctx.font='10px sans-serif'; ctx.textAlign='right';
-    ctx.fillText(lbl,0,0); ctx.restore();
+    const cvT = parseFloat(document.getElementById('cfgCv').value) || 10;
+    const lblColor=g.grp==='parent'?'#94a3b8':g.cv>cvT?'#d97706':'#44403c';
+    xLabels+=`<text transform="rotate(-40,${x},${padT+plotH+10})" x="${x}" y="${padT+plotH+10}" text-anchor="end" fill="${lblColor}" font-size="10" font-family="IBM Plex Sans,sans-serif">${lbl}</text>`;
   });
-
-  // Y-axis label
-  ctx.save(); ctx.translate(14,padT+plotH/2); ctx.rotate(-Math.PI/2);
-  ctx.fillStyle='#7a82a0'; ctx.font='11px monospace'; ctx.textAlign='center';
-  ctx.fillText('Protein (µg/mL)',0,0); ctx.restore();
-
-  // Title & subtitle
-  ctx.fillStyle='#e8eaf2'; ctx.font='bold 14px sans-serif'; ctx.textAlign='left';
-  ctx.fillText(`Protein concentration by strain — BCA ${today()}`,padL,20);
-  ctx.fillStyle='#7a82a0'; ctx.font='10px monospace';
-  ctx.fillText(`Box = IQR, line = median, whiskers = min/max, dots = individual replicates${parentG?`. Dashed = ${parentStrain} median.`:'.'}`,padL,38);
 
   // Legend
   const grpsPresent=[...new Set(groups.map(g=>g.grp))];
-  const LEG_LABELS={parent:g=>`${g.sample} (parent)`,c1:_=>'Colony 1',c2:_=>'Colony 2',other:_=>'Other strains'};
-  let lx=padL;
+  const LEG_DEFS={parent:g=>`${g.sample} (parent)`,c1:_=>'Colony 1',c2:_=>'Colony 2',other:_=>'Other strains'};
+  const legEntries=[];
   grpsPresent.forEach(grp=>{
     const ex=groups.find(g=>g.grp===grp);
-    const label=LEG_LABELS[grp]?LEG_LABELS[grp](ex):grp;
-    const C=COLORS[grp]||COLORS.other;
-    ctx.fillStyle=C.fill; ctx.strokeStyle=C.stroke; ctx.lineWidth=1.2;
-    ctx.beginPath(); ctx.rect(lx,54,13,13); ctx.fill(); ctx.stroke();
-    ctx.fillStyle='#c8cce0'; ctx.font='10px sans-serif'; ctx.textAlign='left';
-    ctx.fillText(label,lx+17,66);
-    lx+=ctx.measureText(label).width+38;
+    legEntries.push({grp,label:LEG_DEFS[grp]?LEG_DEFS[grp](ex):grp});
   });
-  if(parentG){
-    ctx.strokeStyle='rgba(170,170,170,0.6)'; ctx.lineWidth=1.3;
-    ctx.setLineDash([5,3]);
-    ctx.beginPath(); ctx.moveTo(lx,60); ctx.lineTo(lx+22,60); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle='#c8cce0'; ctx.font='10px sans-serif'; ctx.textAlign='left';
-    ctx.fillText(`${parentStrain} median`,lx+26,66);
-  }
+  if (parentGroup) legEntries.push({grp:'__ref__',label:`${parentStrain} median`});
 
-  return cv.toDataURL('image/png');
+  const legX=padL, legY0=14;
+  let legend='';
+  legend+=`<text x="${legX}" y="${legY0}" font-size="13" font-weight="600" fill="#1c1917" font-family="IBM Plex Sans,sans-serif">Protein concentration by strain — BCA ${dateStr}</text>`;
+  legend+=`<text x="${legX}" y="${legY0+17}" font-size="9.5" fill="#78716c" font-family="IBM Plex Mono,monospace">Box = IQR, line = median, whiskers = min/max, dots = individual replicates${parentGroup?`. Dashed = ${parentStrain} median.`:'.'}
+  </text>`;
+
+  let lx=legX;
+  legEntries.forEach(entry=>{
+    if (entry.grp==='__ref__') {
+      legend+=`<line x1="${lx}" y1="${legY0+35}" x2="${lx+22}" y2="${legY0+35}" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5,3"/>`;
+      legend+=`<text x="${lx+27}" y="${legY0+40}" fill="#44403c" font-size="10" font-family="IBM Plex Sans,sans-serif">${entry.label}</text>`;
+      lx+=entry.label.length*6.4+42;
+    } else {
+      const C=COLORS[entry.grp]||COLORS.other;
+      legend+=`<rect x="${lx}" y="${legY0+28}" width="14" height="14" rx="2" fill="${C.fill}" stroke="${C.stroke}" stroke-width="1.5"/>`;
+      legend+=`<text x="${lx+19}" y="${legY0+40}" fill="#44403c" font-size="10" font-family="IBM Plex Sans,sans-serif">${entry.label}</text>`;
+      lx+=entry.label.length*6.4+34;
+    }
+  });
+
+  const minW=Math.max(W,640);
+  const svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg" style="display:block;min-width:${minW}px;">
+    ${yAxisLabel}${grid}${refLine}${boxes}${xLabels}${yLabels}${legend}
+  </svg>`;
+
+  const wrap=document.getElementById('boxChartWrap');
+  wrap.style.height=(H+10)+'px';
+  wrap.style.overflowX='auto';
+  wrap.innerHTML=svg;
 }
 
-function toggleAbout() {
-  document.getElementById('aboutPanel').classList.toggle('open');
+// ── Export CSV ────────────────────────────────────────────────────────────────
+function exportCSV() {
+  const rows=[['Sample','N','Mean_ugmL','SD_ugmL','CV_pct']];
+  summaryResults.forEach(s=>rows.push([s.sample,s.n,s.mean.toFixed(2),s.sd.toFixed(2),s.cv.toFixed(1)]));
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'}));
+  a.download=`BCA_results_${today()}.csv`; a.click();
 }
 
-function today() {
-  return new Date().toISOString().slice(0,10).replace(/-/g,'');
+// ── Export XLSX ───────────────────────────────────────────────────────────────
+function exportXLSX() {
+  const {slope,intercept,r2,blank,stdConcs,stdAbsBg,wellResults}=stdCurveData;
+  const wl=document.getElementById('cfgWl').value;
+  const wb=XLSX.utils.book_new(), dateStr=today();
+
+  const sumRows=[[`BCA Protein Quantification — ${dateStr}`],
+    [`Standard curve: y = ${slope.toFixed(2)}x + ${intercept.toFixed(2)}  |  R² = ${r2.toFixed(4)}  |  Blank = ${blank.toFixed(4)} AU`],
+    [],['Sample','N (replicates)','Mean [protein] (µg/mL)','SD (µg/mL)','CV (%)','Flag']];
+  summaryResults.forEach(s=>sumRows.push([s.sample,s.n,+s.mean.toFixed(2),+s.sd.toFixed(2),+s.cv.toFixed(1),s.cv>10?'⚠ CV >10%':'']));
+  sumRows.push([],[],['Protein concentration by sample (box plot)']);
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sumRows),'Summary');
+
+  const wellData=[['Well','Sample',`Absorbance ${wl}nm`,'Abs (blank-corrected)','Protein (µg/mL)']];
+  wellResults.forEach(w=>wellData.push([w.well,w.sample,+w.abs.toFixed(4),+w.bgCorr.toFixed(4),+w.conc.toFixed(2)]));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(wellData),'Per-Well Data');
+
+  const stdRows=[['BCA Standard Curve Data','','','',''],[]
+    ,['Standard ID','BSA (µg/mL)',`Absorbance ${wl}nm`,'Abs (blank-corrected)','Fitted Conc (µg/mL)']];
+  const stdIds=['A','B','C','D','E','F','G','H','I'];
+  stdConcs.forEach((c,i)=>{
+    const fitted=c===0?'n/a (blank)':+(slope*stdAbsBg[i]+intercept).toFixed(2);
+    stdRows.push([stdIds[i]||String(i+1),c,+(stdAbsBg[i]+blank).toFixed(4),+stdAbsBg[i].toFixed(4),fitted]);
+  });
+  stdRows.push([],[],['Regression Statistics'],
+    ['Slope (µg·mL⁻¹ / AU)',+slope.toFixed(4)],['Intercept (µg/mL)',+intercept.toFixed(4)],
+    ['R²',+r2.toFixed(5)],['Blank absorbance (mean)',+blank.toFixed(4)]);
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(stdRows),'Standard Curve');
+  XLSX.writeFile(wb,`BCA_Analysis_${dateStr}.xlsx`);
 }
+
+// ── Download box plot as PNG ──────────────────────────────────────────────────
+function downloadBoxPlot() {
+  const wrap = document.getElementById('boxChartWrap');
+  const svg  = wrap.querySelector('svg');
+  if (!svg) return;
+
+  const btn = document.getElementById('dlBoxBtn');
+  btn.textContent = 'Preparing…';
+  btn.disabled = true;
+
+  // Get natural SVG dimensions from viewBox
+  const vb     = svg.getAttribute('viewBox').split(' ').map(Number);
+  const svgW   = vb[2], svgH = vb[3];
+  const DPR    = 2;   // retina quality
+  const canvW  = svgW * DPR, canvH = svgH * DPR;
+
+  // Serialise SVG — inject white background rect so PNG isn't transparent
+  const svgClone = svg.cloneNode(true);
+  svgClone.setAttribute('width', svgW);
+  svgClone.setAttribute('height', svgH);
+  // Prepend white bg
+  const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  bgRect.setAttribute('width', svgW); bgRect.setAttribute('height', svgH); bgRect.setAttribute('fill', '#ffffff');
+  svgClone.insertBefore(bgRect, svgClone.firstChild);
+
+  const serialised = new XMLSerializer().serializeToString(svgClone);
+  const svgBlob    = new Blob([serialised], { type: 'image/svg+xml;charset=utf-8' });
+  const url        = URL.createObjectURL(svgBlob);
+
+  const img = new Image();
+  img.onload = () => {
+    const canvas  = document.createElement('canvas');
+    canvas.width  = canvW;
+    canvas.height = canvH;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(DPR, DPR);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, svgW, svgH);
+    ctx.drawImage(img, 0, 0, svgW, svgH);
+    URL.revokeObjectURL(url);
+
+    canvas.toBlob(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `BCA_boxplot_${today()}.png`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      btn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download PNG`;
+      btn.disabled = false;
+    }, 'image/png');
+  };
+  img.onerror = () => {
+    btn.textContent = 'Download PNG';
+    btn.disabled = false;
+  };
+  img.src = url;
+}
+
+// ── Copy summary table to clipboard (TSV — pastes into Excel/Sheets) ─────────
+function copyTable() {
+  const btn = document.getElementById('copyBtn');
+  const header = ['Sample','N','Mean (µg/mL)','SD (µg/mL)','CV (%)','Status'];
+  const rows = summaryResults.map(s => {
+    const cvT = parseFloat(document.getElementById('cfgCv').value) || 10;
+    return [s.sample, s.n, s.mean.toFixed(2), s.sd.toFixed(2), s.cv.toFixed(1),
+            s.cv > cvT ? `CV > ${cvT}%` : 'Pass'];
+  });
+  const tsv = [header, ...rows].map(r => r.join('\t')).join('\n');
+  navigator.clipboard.writeText(tsv).then(() => {
+    btn.innerHTML = '✓ Copied!';
+    btn.style.color = 'var(--accent2)';
+    btn.style.borderColor = '#a7f3d0';
+    setTimeout(() => {
+      btn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy table`;
+      btn.style.color = ''; btn.style.borderColor = '';
+    }, 2000);
+  }).catch(() => {
+    btn.innerHTML = 'Failed — try CSV'; setTimeout(() => { btn.innerHTML = 'Copy table'; }, 2000);
+  });
+}
+
+function toggleAbout() { document.getElementById('aboutPanel').classList.toggle('open'); }
+function today() { return new Date().toISOString().slice(0,10).replace(/-/g,''); }
 </script>
 </body>
 </html>
