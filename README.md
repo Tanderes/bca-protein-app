@@ -7,7 +7,7 @@ A browser-based tool for analysing Pierce BCA microplate protein assays. Upload 
 
 ## Quick start
 
-1. Open the app at `https://yourusername.github.io/bca-protein-app`
+1. Open the app at `[https://yourusername.github.io/bca-protein-app](https://tanderes.github.io/bca-protein-app/)`
 2. Upload your **absorbance CSV** and **plate layout CSV**
 3. Set your wavelength, dilution factor, and parent strain in the config bar
 4. Click **Run analysis**
