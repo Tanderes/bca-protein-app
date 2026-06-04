@@ -604,24 +604,24 @@ footer a:hover { color: var(--accent); }
             <li><strong>Dilution factor</strong> — multiplier for all concentrations</li>
             <li><strong>Standards in row</strong> — which row holds BSA standards</li>
             <li><strong>Std concentrations</strong> — comma-separated µg/mL, must include 0</li>
-            <li><strong>Parent strain</strong> — dashed reference line on box plot</li>
+            <li><strong>Reference sample</strong> — sets dashed reference line on box plot</li>
           </ul>
         </div>
         <div class="about-card">
-          <div class="about-card-title">Test data — 20260522 Y293 PDIs</div>
-          <p style="margin-bottom:8px;">Y293 yeast strains expressing PDI variants. Standards in <strong>row H</strong> (all 12 wells = STD).</p>
+          <div class="about-card-title">Sample template files</div>
+          <p style="margin-bottom:8px;">Generic 96-well plate templates you can adapt for your own experiment. Standards in <strong>row H</strong> (all 12 wells = STD).</p>
           <ul>
-            <li><strong>Rows A–C</strong> — colony 1 replicates (c1)</li>
-            <li><strong>Rows D–F</strong> — colony 2 replicates (c2)</li>
-            <li><strong>Row G</strong> — controls: Y11, Y243, Y310, Y371</li>
-            <li>Expected: R² ≥ 0.99, ~500–700 µg/mL, Y293 ~600 µg/mL</li>
+            <li><strong>Rows A–C</strong> — group 1 samples (3 replicates each)</li>
+            <li><strong>Rows D–F</strong> — group 2 samples (3 replicates each)</li>
+            <li><strong>Row G</strong> — additional controls or samples</li>
+            <li><strong>Row H</strong> — BSA standards: 2000→0 µg/mL + blank</li>
           </ul>
         </div>
       </div>
       <div class="sample-bar">
-        <span class="sample-bar-label">Downloads</span>
-        <a class="sample-link" href="https://tanderes.github.io/bca-protein-app/sample-data/20260522_BCA_293PDIs.csv" download>⬇ Absorbance CSV</a>
-        <a class="sample-link" href="https://tanderes.github.io/bca-protein-app/sample-data/Transformation__Y293___PDIs_-_PC_layout1.csv" download>⬇ Layout CSV</a>
+        <span class="sample-bar-label">Templates &amp; protocol</span>
+        <a class="sample-link" href="https://tanderes.github.io/bca-protein-app/sample-data/BCA_absorbance_template.csv" download>⬇ Absorbance template</a>
+        <a class="sample-link" href="https://tanderes.github.io/bca-protein-app/sample-data/BCA_layout_template.csv" download>⬇ Layout template</a>
         <a class="sample-link protocol-link" href="https://tanderes.github.io/bca-protein-app/MAN0011430_Pierce_BCA_Protein_Asy_UG.pdf" target="_blank">📄 Pierce BCA Protocol</a>
       </div>
     </div>
@@ -705,8 +705,8 @@ footer a:hover { color: var(--accent); }
     </div>
     <div class="config-sep"></div>
     <div class="config-item">
-      <label>Parent strain</label>
-      <input id="cfgParent" type="text" value="Y293" style="width:80px;" placeholder="e.g. Y293"/>
+      <label>Reference sample</label>
+      <input id="cfgParent" type="text" value="" style="width:80px;" placeholder="e.g. WT"/>
     </div>
     <div class="config-sep"></div>
     <div class="config-item">
@@ -743,7 +743,7 @@ footer a:hover { color: var(--accent); }
 
     <div class="chart-card" style="margin-bottom:24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-        <h3 style="margin-bottom:0;">Protein concentration by strain</h3>
+        <h3 style="margin-bottom:0;">Protein concentration by sample</h3>
         <button class="btn-secondary" onclick="downloadBoxPlot()" id="dlBoxBtn" style="font-size:11px;padding:5px 11px;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Download PNG
@@ -877,7 +877,7 @@ function resetApp() {
   document.getElementById('cfgDil').value   = '1';
   document.getElementById('cfgStdRow').value= 'H';
   document.getElementById('cfgStds').value  = '2000,1500,1000,750,500,250,125,25,0';
-  document.getElementById('cfgParent').value= 'Y293';
+  document.getElementById('cfgParent').value= '';
   document.getElementById('cfgCv').value    = '10';
 
   // Results & status
@@ -1333,7 +1333,7 @@ function renderBoxPlot() {
 
   // Legend
   const grpsPresent=[...new Set(groups.map(g=>g.grp))];
-  const LEG_DEFS={parent:g=>`${g.sample} (parent)`,c1:_=>'Colony 1',c2:_=>'Colony 2',other:_=>'Other strains'};
+  const LEG_DEFS={parent:g=>`${g.sample} (reference)`,c1:_=>'Group 1',c2:_=>'Group 2',other:_=>'Other samples'};
   const legEntries=[];
   grpsPresent.forEach(grp=>{
     const ex=groups.find(g=>g.grp===grp);
@@ -1343,7 +1343,7 @@ function renderBoxPlot() {
 
   const legX=padL, legY0=14;
   let legend='';
-  legend+=`<text x="${legX}" y="${legY0}" font-size="13" font-weight="600" fill="#1c1917" font-family="IBM Plex Sans,sans-serif">Protein concentration by strain — BCA ${dateStr}</text>`;
+  legend+=`<text x="${legX}" y="${legY0}" font-size="13" font-weight="600" fill="#1c1917" font-family="IBM Plex Sans,sans-serif">Protein concentration by sample — BCA ${dateStr}</text>`;
   legend+=`<text x="${legX}" y="${legY0+17}" font-size="9.5" fill="#78716c" font-family="IBM Plex Mono,monospace">Box = IQR, line = median, whiskers = min/max, dots = individual replicates${parentGroup?`. Dashed = ${parentStrain} median.`:'.'}
   </text>`;
 
@@ -1380,7 +1380,7 @@ function exportCSV() {
     s.sample, s.n, s.mean.toFixed(2), s.sd.toFixed(2), s.cv.toFixed(1),
     s.cv > cvT ? `CV>${cvT}%` : 'Pass'
   ]));
-  // Properly quote any field that contains a comma (e.g. "Y293+EBB769,c1")
+  // Properly quote any field that contains a comma
   const csv = rows.map(r => r.map(csvField).join(',')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
