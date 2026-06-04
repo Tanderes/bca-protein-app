@@ -591,9 +591,9 @@ footer a:hover { color: var(--accent); }
         <div class="about-card">
           <div class="about-card-title">How it works</div>
           <div class="steps">
-            <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Blank correction</strong> — mean A₀ subtracted from every well</div></div>
+            <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Blank correction</strong> — mean A&#x2080; subtracted from every well</div></div>
             <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Linear regression</strong> — least-squares fit on blank-corrected standards</div></div>
-            <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Interpolation</strong> — conc = slope × (abs − blank) + intercept × dilution factor</div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Interpolation</strong> — conc = slope &times; (abs &minus; blank) + intercept &times; dilution factor</div></div>
             <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Box plot</strong> — per-well values, parent strain sets dashed reference</div></div>
           </div>
         </div>
@@ -603,7 +603,7 @@ footer a:hover { color: var(--accent); }
             <li><strong>Wavelength</strong> — measurement wavelength (nm), default 526</li>
             <li><strong>Dilution factor</strong> — multiplier for all concentrations</li>
             <li><strong>Standards in row</strong> — which row holds BSA standards</li>
-            <li><strong>Std concentrations</strong> — comma-separated µg/mL, must include 0</li>
+            <li><strong>Std concentrations</strong> — comma-separated &micro;g/mL, must include 0</li>
             <li><strong>Reference sample</strong> — sets dashed reference line on box plot</li>
           </ul>
         </div>
@@ -614,15 +614,15 @@ footer a:hover { color: var(--accent); }
             <li><strong>Rows A–C</strong> — group 1 samples (3 replicates each)</li>
             <li><strong>Rows D–F</strong> — group 2 samples (3 replicates each)</li>
             <li><strong>Row G</strong> — additional controls or samples</li>
-            <li><strong>Row H</strong> — BSA standards: 2000→0 µg/mL + blank</li>
+            <li><strong>Row H</strong> — BSA standards: 2000→0 &micro;g/mL + blank</li>
           </ul>
         </div>
       </div>
       <div class="sample-bar">
         <span class="sample-bar-label">Templates &amp; protocol</span>
-        <a class="sample-link" href="https://tanderes.github.io/bca-protein-app/sample-data/BCA_absorbance_template.csv" download>⬇ Absorbance template</a>
-        <a class="sample-link" href="https://tanderes.github.io/bca-protein-app/sample-data/BCA_layout_template.csv" download>⬇ Layout template</a>
-        <a class="sample-link protocol-link" href="https://tanderes.github.io/bca-protein-app/MAN0011430_Pierce_BCA_Protein_Asy_UG.pdf" target="_blank">📄 Pierce BCA Protocol</a>
+        <a class="sample-link" href="https://tanderes.github.io/bca-protein-app/sample-data/BCA_absorbance_template.csv" download>&#x2B07; Absorbance template</a>
+        <a class="sample-link" href="https://tanderes.github.io/bca-protein-app/sample-data/BCA_layout_template.csv" download>&#x2B07; Layout template</a>
+        <a class="sample-link protocol-link" href="https://tanderes.github.io/bca-protein-app/MAN0011430_Pierce_BCA_Protein_Asy_UG.pdf" target="_blank">&#x1F4C4; Pierce BCA Protocol</a>
       </div>
     </div>
   </div>
@@ -642,9 +642,9 @@ footer a:hover { color: var(--accent); }
       </div>
       <div class="drop-zone" id="dzAbs">
         <input type="file" accept=".csv" onchange="handleFile(event,'abs')"/>
-        <span class="dz-icon">📊</span>
+        <span class="dz-icon">&#x1F4CA;</span>
         <div class="dz-label">Drop CSV or click to browse</div>
-        <div class="dz-sub">rows A–H · cols 1–12 · absorbance values</div>
+        <div class="dz-sub">rows A–H &middot; cols 1–12 &middot; absorbance values</div>
         <div class="dz-filename" id="fnAbs" style="display:none"></div>
       </div>
       <div class="plate-preview" id="previewAbs">
@@ -663,9 +663,9 @@ footer a:hover { color: var(--accent); }
       </div>
       <div class="drop-zone" id="dzLay">
         <input type="file" accept=".csv" onchange="handleFile(event,'layout')"/>
-        <span class="dz-icon">🗺️</span>
+        <span class="dz-icon">&#x1F5FA;&#xFE0F;</span>
         <div class="dz-label">Drop CSV or click to browse</div>
-        <div class="dz-sub">rows A–H · cols 1–12 · sample names</div>
+        <div class="dz-sub">rows A–H &middot; cols 1–12 &middot; sample names</div>
         <div class="dz-filename" id="fnLay" style="display:none"></div>
       </div>
       <div class="plate-preview" id="previewLay">
@@ -686,7 +686,7 @@ footer a:hover { color: var(--accent); }
     <div class="config-item">
       <label>Dilution</label>
       <input id="cfgDil" type="number" value="1" min="1" step="1"/>
-      <span style="font-size:11px;color:var(--muted);font-family:var(--mono)">×</span>
+      <span style="font-size:11px;color:var(--muted);font-family:var(--mono)">&times;</span>
     </div>
     <div class="config-sep"></div>
     <div class="config-item">
@@ -700,7 +700,7 @@ footer a:hover { color: var(--accent); }
     </div>
     <div class="config-sep"></div>
     <div class="config-item">
-      <label>Std conc. (µg/mL)</label>
+      <label>Std conc. (&micro;g/mL)</label>
       <input id="cfgStds" type="text" value="2000,1500,1000,750,500,250,125,25,0" style="width:240px;font-size:10px;"/>
     </div>
     <div class="config-sep"></div>
@@ -757,8 +757,8 @@ footer a:hover { color: var(--accent); }
       <table>
         <thead>
           <tr>
-            <th>Sample</th><th>N</th><th>Mean (µg/mL)</th>
-            <th>SD (µg/mL)</th><th>CV (%)</th><th>Status</th>
+            <th>Sample</th><th>N</th><th>Mean (&micro;g/mL)</th>
+            <th>SD (&micro;g/mL)</th><th>CV (%)</th><th>Status</th>
           </tr>
         </thead>
         <tbody id="summaryBody"></tbody>
@@ -767,8 +767,7 @@ footer a:hover { color: var(--accent); }
 
     <div class="section-label">Export</div>
     <div class="export-bar">
-      <button class="btn-secondary" onclick="exportCSV()">⬇ CSV</button>
-      <button class="btn-secondary" onclick="exportXLSX()">⬇ Excel (.xlsx)</button>
+      <button class="btn-secondary" onclick="exportXLSX()">&#x2B07; Excel (.xlsx)</button>
       <button class="btn-secondary" onclick="copyTable()" id="copyBtn">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         Copy table
@@ -779,7 +778,7 @@ footer a:hover { color: var(--accent); }
 </main>
 
 <footer>
-  <span>BCA Protein App · Pierce BCA Microplate · Linear regression</span>
+  <span>BCA Protein App &middot; Pierce BCA Microplate &middot; Linear regression</span>
   <div class="footer-links">
     <a href="https://github.com/tanderes/bca-protein-app" target="_blank">GitHub</a>
     <a href="https://tanderes.github.io/bca-protein-app/MAN0011430_Pierce_BCA_Protein_Asy_UG.pdf" target="_blank">Protocol</a>
@@ -821,7 +820,7 @@ function readCSV(file, type) {
         absData = res.data;
         document.getElementById('cardAbs').classList.add('loaded');
         const fn = document.getElementById('fnAbs');
-        fn.textContent = '✓ ' + file.name; fn.style.display = 'inline-block';
+        fn.textContent = '\u2713 ' + file.name; fn.style.display = 'inline-block';
         const badge = document.getElementById('badgeAbs');
         badge.textContent = 'Loaded'; badge.classList.add('loaded');
         renderPlatePreview(res.data, 'previewAbs', 'emptyAbs', 'abs');
@@ -829,7 +828,7 @@ function readCSV(file, type) {
         layoutData = res.data;
         document.getElementById('cardLay').classList.add('loaded');
         const fn = document.getElementById('fnLay');
-        fn.textContent = '✓ ' + file.name; fn.style.display = 'inline-block';
+        fn.textContent = '\u2713 ' + file.name; fn.style.display = 'inline-block';
         const badge = document.getElementById('badgeLay');
         badge.textContent = 'Loaded'; badge.classList.add('loaded');
         renderPlatePreview(res.data, 'previewLay', 'emptyLay', 'layout');
@@ -848,31 +847,26 @@ function checkReady() {
 
 // ── Reset ─────────────────────────────────────────────────────────────────────
 function resetApp() {
-  // State
   absData = null; layoutData = null;
   summaryResults = []; stdCurveData = {};
   if (stdChartInst) { stdChartInst.destroy(); stdChartInst = null; }
 
-  // Upload cards
   ['Abs','Lay'].forEach(t => {
     document.getElementById(`card${t}`).classList.remove('loaded','drag-over');
     const fn = document.getElementById(`fn${t}`);
     fn.textContent = ''; fn.style.display = 'none';
     const badge = document.getElementById(`badge${t}`);
     badge.textContent = 'No file'; badge.classList.remove('loaded');
-    // Reset file input so same file can be re-uploaded
     const dz = document.getElementById(`dz${t}`);
     const input = dz.querySelector('input[type=file]');
     if (input) input.value = '';
   });
 
-  // Plate previews
   document.getElementById('previewAbs').innerHTML =
     '<div class="plate-empty" id="emptyAbs">plate preview appears here after upload</div>';
   document.getElementById('previewLay').innerHTML =
     '<div class="plate-empty" id="emptyLay">plate preview appears here after upload</div>';
 
-  // Config — restore defaults
   document.getElementById('cfgWl').value    = '526';
   document.getElementById('cfgDil').value   = '1';
   document.getElementById('cfgStdRow').value= 'H';
@@ -880,7 +874,6 @@ function resetApp() {
   document.getElementById('cfgParent').value= '';
   document.getElementById('cfgCv').value    = '10';
 
-  // Results & status
   document.getElementById('results').style.display = 'none';
   document.getElementById('stdStats').innerHTML = '';
   document.getElementById('summaryBody').innerHTML = '';
@@ -888,7 +881,6 @@ function resetApp() {
   clearStatus();
   checkReady();
 
-  // Scroll back to top
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -907,13 +899,10 @@ function renderPlatePreview(data, containerId, emptyId, mode) {
 
   if (Object.keys(grid).length === 0) return;
 
-  // For absorbance: colour by heat map (low=light blue, high=deep blue)
-  // For layout: colour by unique sample name
   let allVals = [], sampleColors = {};
   if (mode === 'abs') {
     ROWS.forEach(r => { if (grid[r]) grid[r].slice(0,12).forEach(v => { const n=parseFloat(v); if (!isNaN(n)) allVals.push(n); }); });
   } else {
-    // Assign colours to unique sample names
     const names = new Set();
     ROWS.forEach(r => { if (grid[r]) grid[r].slice(0,12).forEach(v => { if (v && v.trim()) names.add(v.trim()); }); });
     const palette = [
@@ -929,14 +918,12 @@ function renderPlatePreview(data, containerId, emptyId, mode) {
       sampleColors[name] = { bg: palette[ci % palette.length], border: strokePalette[ci % strokePalette.length] };
       ci++;
     });
-    // STD gets a distinct neutral
     sampleColors['STD'] = { bg: '#f1f5f9', border: '#94a3b8' };
   }
 
   const minV = Math.min(...allVals), maxV = Math.max(...allVals);
 
   let html = '<div class="plate-grid">';
-  // Column headers
   html += '<div class="plate-col-labels"><div style="width:14px;flex-shrink:0;"></div>';
   for (let c = 1; c <= 12; c++) html += `<div class="plate-col-label">${c}</div>`;
   html += '</div>';
@@ -952,7 +939,6 @@ function renderPlatePreview(data, containerId, emptyId, mode) {
         const val = parseFloat(raw);
         if (!isNaN(val)) {
           const t = maxV > minV ? (val - minV) / (maxV - minV) : 0.5;
-          // Heat map: low = #eff6ff (very light blue), high = #1d4ed8 (deep blue)
           const r2 = Math.round(239 + (29 - 239) * t);
           const g2 = Math.round(246 + (78 - 246) * t);
           const b2 = Math.round(255 + (216 - 255) * t);
@@ -966,7 +952,6 @@ function renderPlatePreview(data, containerId, emptyId, mode) {
           border = sampleColors[raw].border;
         }
         title = raw || '';
-        // Show abbreviated text if short enough
         if (raw && raw.length <= 4) textColor = '#374151';
       }
 
@@ -976,7 +961,6 @@ function renderPlatePreview(data, containerId, emptyId, mode) {
   });
   html += '</div>';
 
-  // Legend for layout mode
   if (mode === 'layout') {
     const uniqueNames = Object.keys(sampleColors);
     if (uniqueNames.length > 0) {
@@ -990,13 +974,12 @@ function renderPlatePreview(data, containerId, emptyId, mode) {
       if (uniqueNames.length > 16) html += `<span style="font-family:var(--mono);font-size:9px;color:var(--muted);">+${uniqueNames.length-16} more</span>`;
       html += '</div>';
     }
-    // Absorbance scale bar
   } else {
     html += `<div style="display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
       <span style="font-family:var(--mono);font-size:9px;color:var(--muted);">${minV.toFixed(3)}</span>
       <div style="flex:1;height:6px;border-radius:3px;background:linear-gradient(to right,#eff6ff,#1d4ed8);border:1px solid #bfdbfe;"></div>
       <span style="font-family:var(--mono);font-size:9px;color:var(--muted);">${maxV.toFixed(3)}</span>
-      <span style="font-family:var(--mono);font-size:9px;color:var(--muted);">AU · hover for value</span>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--muted);">AU &middot; hover for value</span>
     </div>`;
   }
 
@@ -1011,45 +994,21 @@ function showStatus(msg, type) {
 function clearStatus() { document.getElementById('statusBar').className = 'status-bar'; }
 
 // ── Flexible grid parser ───────────────────────────────────────────────────────
-// Handles: quoted commas in cell names, numeric row labels (1-8 → A-H),
-// extra header/blank rows, tab-separated files, leading/trailing whitespace,
-// rows in any order, extra columns beyond 12, missing rows.
 function parseGrid(data) {
   const ROW_LETTERS = ['A','B','C','D','E','F','G','H'];
-  // Also accept numeric rows 1–8 as A–H
   const NUM_TO_LETTER = {'1':'A','2':'B','3':'C','4':'D','5':'E','6':'F','7':'G','8':'H'};
   const grid = {};
 
-  // Detect if file might be tab-separated (PapaParse should handle it, but just in case)
-  // PapaParse already splits by delimiter, so data rows are already arrays here.
-
   data.forEach(rawRow => {
     if (!rawRow || rawRow.length < 2) return;
-
-    // Normalise the row-ID cell
     let key = (rawRow[0] || '').toString().trim().toUpperCase();
-
-    // Map numeric labels → letters
     if (NUM_TO_LETTER[key]) key = NUM_TO_LETTER[key];
-
-    // Skip if not a recognised plate row
     if (!ROW_LETTERS.includes(key)) return;
-
-    // Collect up to 12 well values, trimming whitespace from each
-    // Handles files that have >12 data columns (extra ignored)
     const cells = rawRow.slice(1).map(v => (v == null ? '' : v.toString().trim()));
-
-    // If a row appears more than once (malformed file), take the first occurrence
     if (!grid[key]) grid[key] = cells;
   });
 
   return grid;
-}
-
-// Quote a CSV field only when necessary (contains comma, quote, or newline)
-function csvField(v) {
-  const s = String(v == null ? '' : v);
-  return /[,"\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
 function linReg(xs, ys) {
@@ -1069,7 +1028,7 @@ function runAnalysis() {
   clearStatus();
   const runBtn = document.getElementById('runBtn');
   runBtn.disabled = true;
-  document.getElementById('runLabel').innerHTML = '<span class="spinner"></span> Running…';
+  document.getElementById('runLabel').innerHTML = '<span class="spinner"></span> Running\u2026';
   setTimeout(() => {
     try { _doAnalysis(); }
     catch(e) { showStatus('Error: ' + e.message, 'error'); }
@@ -1086,10 +1045,9 @@ function _doAnalysis() {
 
   const absGrid = parseGrid(absData), layoutGrid = parseGrid(layoutData);
 
-  // Warn if layout file yielded very few rows (likely a format problem)
   const layoutRowCount = Object.keys(layoutGrid).length;
-  if (layoutRowCount === 0) throw new Error('No plate rows (A–H) found in layout file. Check that the first column contains row letters.');
-  if (layoutRowCount < 3) showStatus(`⚠ Only ${layoutRowCount} plate row(s) detected in layout — check your file format.`, 'info');
+  if (layoutRowCount === 0) throw new Error('No plate rows (A\u2013H) found in layout file. Check that the first column contains row letters.');
+  if (layoutRowCount < 3) showStatus(`\u26a0 Only ${layoutRowCount} plate row(s) detected in layout \u2014 check your file format.`, 'info');
   if (!absGrid[stdRowKey]) throw new Error(`Row ${stdRowKey} not found in absorbance file.`);
 
   const stdAbsRaw = absGrid[stdRowKey].slice(0, stdConcs.length).map(Number);
@@ -1097,7 +1055,7 @@ function _doAnalysis() {
 
   const blankAbs = [];
   stdConcs.forEach((c, i) => { if (c === 0) blankAbs.push(stdAbsRaw[i]); });
-  if (blankAbs.length === 0) throw new Error('No 0 µg/mL standard found. Add a 0 to the concentrations list.');
+  if (blankAbs.length === 0) throw new Error('No 0 \u00b5g/mL standard found. Add a 0 to the concentrations list.');
   const blank = blankAbs.reduce((a,b)=>a+b,0) / blankAbs.length;
 
   const stdAbsBg = stdAbsRaw.map(a => a - blank);
@@ -1105,7 +1063,7 @@ function _doAnalysis() {
   stdConcs.forEach((c, i) => { if (c > 0) { fitX.push(stdAbsBg[i]); fitY.push(c); } });
 
   const { slope, intercept, r2 } = linReg(fitX, fitY);
-  if (r2 < 0.95) showStatus(`⚠ Low R² (${r2.toFixed(4)}) — check your standards.`, 'info');
+  if (r2 < 0.95) showStatus(`\u26a0 Low R\u00b2 (${r2.toFixed(4)}) \u2014 check your standards.`, 'info');
 
   const sampleRows = ['A','B','C','D','E','F','G','H'].filter(r => r !== stdRowKey);
   const wellResults = [];
@@ -1148,19 +1106,19 @@ function renderResults(dilution) {
 
   document.getElementById('stdStats').innerHTML = `
     <div class="stat-card ${r2>=0.99?'good':r2>=0.97?'':'warn'}">
-      <div class="s-label">R²</div>
+      <div class="s-label">R&sup2;</div>
       <div class="s-value">${r2.toFixed(4)}</div>
       <div class="s-sub">${r2>=0.99?'Excellent fit':r2>=0.97?'Good fit':'Check standards'}</div>
     </div>
     <div class="stat-card">
       <div class="s-label">Blank</div>
       <div class="s-value">${blank.toFixed(4)}</div>
-      <div class="s-sub">Mean A₀ (AU)</div>
+      <div class="s-sub">Mean A&#x2080; (AU)</div>
     </div>
     <div class="stat-card">
       <div class="s-label">Slope</div>
       <div class="s-value">${slope.toFixed(1)}</div>
-      <div class="s-sub">µg·mL⁻¹ / AU</div>
+      <div class="s-sub">&micro;g&middot;mL&#x207b;&#xb9; / AU</div>
     </div>
     <div class="stat-card">
       <div class="s-label">Samples</div>
@@ -1174,14 +1132,13 @@ function renderResults(dilution) {
     </div>
     <div class="stat-card">
       <div class="s-label">Dilution</div>
-      <div class="s-value">${dilution}×</div>
+      <div class="s-value">${dilution}&times;</div>
       <div class="s-sub">Applied to all</div>
     </div>`;
 
   document.getElementById('eqLabel').textContent = `y = ${slope.toFixed(2)}x + ${intercept.toFixed(2)}`;
-  document.getElementById('r2Label').textContent  = `R² = ${r2.toFixed(4)}`;
+  document.getElementById('r2Label').textContent  = `R\u00b2 = ${r2.toFixed(4)}`;
 
-  // Standard curve chart — light mode colours
   if (stdChartInst) stdChartInst.destroy();
   const { fitX, fitY } = stdCurveData;
   const xFit = [Math.min(...fitX)*0.98, Math.max(...fitX)*1.02];
@@ -1198,12 +1155,12 @@ function renderResults(dilution) {
     options: {
       responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{display:false},
-        tooltip:{callbacks:{label:c=>c.datasetIndex===0?`Abs: ${c.parsed.x.toFixed(4)} → ${c.parsed.y} µg/mL`:null}}
+        tooltip:{callbacks:{label:c=>c.datasetIndex===0?`Abs: ${c.parsed.x.toFixed(4)} \u2192 ${c.parsed.y} \u00b5g/mL`:null}}
       },
       scales:{
         x:{ title:{display:true,text:`A${wl} (blank-corrected)`,color:'#78716c',font:{size:10}},
             grid:{color:'rgba(0,0,0,0.05)'}, ticks:{color:'#78716c',font:{size:10}} },
-        y:{ title:{display:true,text:'BSA (µg/mL)',color:'#78716c',font:{size:10}},
+        y:{ title:{display:true,text:'BSA (\u00b5g/mL)',color:'#78716c',font:{size:10}},
             grid:{color:'rgba(0,0,0,0.05)'}, ticks:{color:'#78716c',font:{size:10}} }
       }
     }
@@ -1220,12 +1177,12 @@ function renderResults(dilution) {
       <td>${s.sd.toFixed(2)}</td>
       <td>${s.cv.toFixed(1)}</td>
       <td>${s.cv>cvThresh
-        ?'<span class="badge badge-warn">⚠ CV &gt; '+cvThresh+'%</span>'
-        :'<span class="badge badge-ok">✓ Pass</span>'}</td>
+        ?'<span class="badge badge-warn">\u26a0 CV &gt; '+cvThresh+'%</span>'
+        :'<span class="badge badge-ok">\u2713 Pass</span>'}</td>
     </tr>`).join('');
 }
 
-// ── Vertical box plot (SVG) — light mode ──────────────────────────────────────
+// ── Vertical box plot (SVG) ───────────────────────────────────────────────────
 function renderBoxPlot() {
   const parentStrain = (document.getElementById('cfgParent').value || '').trim();
   const dateStr = today();
@@ -1248,7 +1205,6 @@ function renderBoxPlot() {
     return 'other';
   }
 
-  // Light-mode colour palette
   const COLORS = {
     parent: { fill:'rgba(100,116,139,0.18)', stroke:'#64748b', dot:'#94a3b8' },
     c1:     { fill:'rgba(37,99,235,0.14)',   stroke:'#2563eb', dot:'#60a5fa' },
@@ -1286,7 +1242,6 @@ function renderBoxPlot() {
   const toY = v => padT+plotH-((v-yMin)/(yMax-yMin))*plotH;
   const cx  = i => padL+i*colW+colW/2;
 
-  // Grid & axes
   let grid='', yLabels='';
   for (let v=yMin; v<=yMax; v+=50) {
     const y=toY(v);
@@ -1295,16 +1250,14 @@ function renderBoxPlot() {
   }
   grid += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+plotH}" stroke="rgba(0,0,0,0.15)" stroke-width="1"/>`;
   grid += `<line x1="${padL}" y1="${padT+plotH}" x2="${W-padR}" y2="${padT+plotH}" stroke="rgba(0,0,0,0.15)" stroke-width="1"/>`;
-  const yAxisLabel = `<text transform="rotate(-90)" x="${-(padT+plotH/2)}" y="14" text-anchor="middle" fill="#78716c" font-size="11" font-family="IBM Plex Mono,monospace">Protein (µg/mL)</text>`;
+  const yAxisLabel = `<text transform="rotate(-90)" x="${-(padT+plotH/2)}" y="14" text-anchor="middle" fill="#78716c" font-size="11" font-family="IBM Plex Mono,monospace">Protein (\u00b5g/mL)</text>`;
 
-  // Reference line
   let refLine='';
   if (refVal!==null) {
     const ry=toY(refVal);
     refLine=`<line x1="${padL}" y1="${ry}" x2="${W-padR}" y2="${ry}" stroke="#64748b" stroke-width="1.3" stroke-dasharray="6,4" opacity="0.5"/>`;
   }
 
-  // Boxes
   const BHW=14;
   const JITTER=[-4,0,4,-7,7,-2,2,-5,5,1,-1,6,-6,3,-3];
   let boxes='', xLabels='';
@@ -1323,7 +1276,7 @@ function renderBoxPlot() {
     g.outliers.forEach(v => {
       boxes+=`<circle cx="${x}" cy="${toY(v)}" r="4.5" fill="none" stroke="${C.stroke}" stroke-width="1.5"/>`;
     });
-    const tip=`${g.sample}\nn = ${g.n}  |  median = ${g.med.toFixed(1)} µg/mL\nQ1 = ${g.q1.toFixed(1)}   Q3 = ${g.q3.toFixed(1)}\nCV = ${g.cv.toFixed(1)}%`;
+    const tip=`${g.sample}\nn = ${g.n}  |  median = ${g.med.toFixed(1)} \u00b5g/mL\nQ1 = ${g.q1.toFixed(1)}   Q3 = ${g.q3.toFixed(1)}\nCV = ${g.cv.toFixed(1)}%`;
     boxes+=`<rect x="${x-colW/2}" y="${padT}" width="${colW}" height="${plotH}" fill="transparent"><title>${tip}</title></rect>`;
     const lbl=parentStrain?g.sample.replace(parentStrain+'+',''):g.sample;
     const cvT = parseFloat(document.getElementById('cfgCv').value) || 10;
@@ -1331,7 +1284,6 @@ function renderBoxPlot() {
     xLabels+=`<text transform="rotate(-40,${x},${padT+plotH+10})" x="${x}" y="${padT+plotH+10}" text-anchor="end" fill="${lblColor}" font-size="10" font-family="IBM Plex Sans,sans-serif">${lbl}</text>`;
   });
 
-  // Legend
   const grpsPresent=[...new Set(groups.map(g=>g.grp))];
   const LEG_DEFS={parent:g=>`${g.sample} (reference)`,c1:_=>'Group 1',c2:_=>'Group 2',other:_=>'Other samples'};
   const legEntries=[];
@@ -1343,7 +1295,7 @@ function renderBoxPlot() {
 
   const legX=padL, legY0=14;
   let legend='';
-  legend+=`<text x="${legX}" y="${legY0}" font-size="13" font-weight="600" fill="#1c1917" font-family="IBM Plex Sans,sans-serif">Protein concentration by sample — BCA ${dateStr}</text>`;
+  legend+=`<text x="${legX}" y="${legY0}" font-size="13" font-weight="600" fill="#1c1917" font-family="IBM Plex Sans,sans-serif">Protein concentration by sample \u2014 BCA ${dateStr}</text>`;
   legend+=`<text x="${legX}" y="${legY0+17}" font-size="9.5" fill="#78716c" font-family="IBM Plex Mono,monospace">Box = IQR, line = median, whiskers = min/max, dots = individual replicates${parentGroup?`. Dashed = ${parentStrain} median.`:'.'}
   </text>`;
 
@@ -1372,49 +1324,33 @@ function renderBoxPlot() {
   wrap.innerHTML=svg;
 }
 
-// ── Export CSV ────────────────────────────────────────────────────────────────
-function exportCSV() {
-  const cvT = parseFloat(document.getElementById('cfgCv').value) || 10;
-  const rows = [['Sample','N','Mean_ugmL','SD_ugmL','CV_pct','Flag']];
-  summaryResults.forEach(s => rows.push([
-    s.sample, s.n, s.mean.toFixed(2), s.sd.toFixed(2), s.cv.toFixed(1),
-    s.cv > cvT ? `CV>${cvT}%` : 'Pass'
-  ]));
-  // Properly quote any field that contains a comma
-  const csv = rows.map(r => r.map(csvField).join(',')).join('\r\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-  a.download = `BCA_results_${today()}.csv`;
-  a.click();
-}
-
 // ── Export XLSX ───────────────────────────────────────────────────────────────
 function exportXLSX() {
   const {slope,intercept,r2,blank,stdConcs,stdAbsBg,wellResults}=stdCurveData;
   const wl=document.getElementById('cfgWl').value;
   const wb=XLSX.utils.book_new(), dateStr=today();
 
-  const sumRows=[[`BCA Protein Quantification — ${dateStr}`],
-    [`Standard curve: y = ${slope.toFixed(2)}x + ${intercept.toFixed(2)}  |  R² = ${r2.toFixed(4)}  |  Blank = ${blank.toFixed(4)} AU`],
-    [],['Sample','N (replicates)','Mean [protein] (µg/mL)','SD (µg/mL)','CV (%)','Flag']];
-  summaryResults.forEach(s=>sumRows.push([s.sample,s.n,+s.mean.toFixed(2),+s.sd.toFixed(2),+s.cv.toFixed(1),s.cv>10?'⚠ CV >10%':'']));
+  const sumRows=[[`BCA Protein Quantification \u2014 ${dateStr}`],
+    [`Standard curve: y = ${slope.toFixed(2)}x + ${intercept.toFixed(2)}  |  R\u00b2 = ${r2.toFixed(4)}  |  Blank = ${blank.toFixed(4)} AU`],
+    [],['Sample','N (replicates)','Mean [protein] (\u00b5g/mL)','SD (\u00b5g/mL)','CV (%)','Flag']];
+  summaryResults.forEach(s=>sumRows.push([s.sample,s.n,+s.mean.toFixed(2),+s.sd.toFixed(2),+s.cv.toFixed(1),s.cv>10?'\u26a0 CV >10%':'']));
   sumRows.push([],[],['Protein concentration by sample (box plot)']);
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sumRows),'Summary');
 
-  const wellData=[['Well','Sample',`Absorbance ${wl}nm`,'Abs (blank-corrected)','Protein (µg/mL)']];
+  const wellData=[['Well','Sample',`Absorbance ${wl}nm`,'Abs (blank-corrected)','Protein (\u00b5g/mL)']];
   wellResults.forEach(w=>wellData.push([w.well,w.sample,+w.abs.toFixed(4),+w.bgCorr.toFixed(4),+w.conc.toFixed(2)]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(wellData),'Per-Well Data');
 
   const stdRows=[['BCA Standard Curve Data','','','',''],[]
-    ,['Standard ID','BSA (µg/mL)',`Absorbance ${wl}nm`,'Abs (blank-corrected)','Fitted Conc (µg/mL)']];
+    ,['Standard ID','BSA (\u00b5g/mL)',`Absorbance ${wl}nm`,'Abs (blank-corrected)','Fitted Conc (\u00b5g/mL)']];
   const stdIds=['A','B','C','D','E','F','G','H','I'];
   stdConcs.forEach((c,i)=>{
     const fitted=c===0?'n/a (blank)':+(slope*stdAbsBg[i]+intercept).toFixed(2);
     stdRows.push([stdIds[i]||String(i+1),c,+(stdAbsBg[i]+blank).toFixed(4),+stdAbsBg[i].toFixed(4),fitted]);
   });
   stdRows.push([],[],['Regression Statistics'],
-    ['Slope (µg·mL⁻¹ / AU)',+slope.toFixed(4)],['Intercept (µg/mL)',+intercept.toFixed(4)],
-    ['R²',+r2.toFixed(5)],['Blank absorbance (mean)',+blank.toFixed(4)]);
+    ['Slope (\u00b5g\u00b7mL\u207b\u00b9 / AU)',+slope.toFixed(4)],['Intercept (\u00b5g/mL)',+intercept.toFixed(4)],
+    ['R\u00b2',+r2.toFixed(5)],['Blank absorbance (mean)',+blank.toFixed(4)]);
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(stdRows),'Standard Curve');
   XLSX.writeFile(wb,`BCA_Analysis_${dateStr}.xlsx`);
 }
@@ -1426,20 +1362,17 @@ function downloadBoxPlot() {
   if (!svg) return;
 
   const btn = document.getElementById('dlBoxBtn');
-  btn.textContent = 'Preparing…';
+  btn.textContent = 'Preparing\u2026';
   btn.disabled = true;
 
-  // Get natural SVG dimensions from viewBox
   const vb     = svg.getAttribute('viewBox').split(' ').map(Number);
   const svgW   = vb[2], svgH = vb[3];
-  const DPR    = 2;   // retina quality
+  const DPR    = 2;
   const canvW  = svgW * DPR, canvH = svgH * DPR;
 
-  // Serialise SVG — inject white background rect so PNG isn't transparent
   const svgClone = svg.cloneNode(true);
   svgClone.setAttribute('width', svgW);
   svgClone.setAttribute('height', svgH);
-  // Prepend white bg
   const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
   bgRect.setAttribute('width', svgW); bgRect.setAttribute('height', svgH); bgRect.setAttribute('fill', '#ffffff');
   svgClone.insertBefore(bgRect, svgClone.firstChild);
@@ -1477,10 +1410,10 @@ function downloadBoxPlot() {
   img.src = url;
 }
 
-// ── Copy summary table to clipboard (TSV — pastes into Excel/Sheets) ─────────
+// ── Copy summary table to clipboard (TSV) ────────────────────────────────────
 function copyTable() {
   const btn = document.getElementById('copyBtn');
-  const header = ['Sample','N','Mean (µg/mL)','SD (µg/mL)','CV (%)','Status'];
+  const header = ['Sample','N','Mean (\u00b5g/mL)','SD (\u00b5g/mL)','CV (%)','Status'];
   const rows = summaryResults.map(s => {
     const cvT = parseFloat(document.getElementById('cfgCv').value) || 10;
     return [s.sample, s.n, s.mean.toFixed(2), s.sd.toFixed(2), s.cv.toFixed(1),
@@ -1488,7 +1421,7 @@ function copyTable() {
   });
   const tsv = [header, ...rows].map(r => r.join('\t')).join('\n');
   navigator.clipboard.writeText(tsv).then(() => {
-    btn.innerHTML = '✓ Copied!';
+    btn.innerHTML = '\u2713 Copied!';
     btn.style.color = 'var(--accent2)';
     btn.style.borderColor = '#a7f3d0';
     setTimeout(() => {
@@ -1496,7 +1429,7 @@ function copyTable() {
       btn.style.color = ''; btn.style.borderColor = '';
     }, 2000);
   }).catch(() => {
-    btn.innerHTML = 'Failed — try CSV'; setTimeout(() => { btn.innerHTML = 'Copy table'; }, 2000);
+    btn.innerHTML = 'Failed \u2014 try Excel'; setTimeout(() => { btn.innerHTML = 'Copy table'; }, 2000);
   });
 }
 
