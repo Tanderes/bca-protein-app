@@ -1,0 +1,9 @@
+,1,2,3,4,5,6,7,8,9,10,11,12
+A,"SampleA","SampleB","SampleC","SampleD","SampleE","SampleF","SampleG","SampleH","SampleI","SampleJ","WT","WT"
+B,"SampleA","SampleB","SampleC","SampleD","SampleE","SampleF","SampleG","SampleH","SampleI","SampleJ","WT","WT"
+C,"SampleA","SampleB","SampleC","SampleD","SampleE","SampleF","SampleG","SampleH","SampleI","SampleJ","WT","WT"
+D,"SampleK","SampleL","SampleM","SampleN","SampleO","SampleP","SampleQ","SampleR","SampleS","SampleT","WT","WT"
+E,"SampleK","SampleL","SampleM","SampleN","SampleO","SampleP","SampleQ","SampleR","SampleS","SampleT","WT","WT"
+F,"SampleK","SampleL","SampleM","SampleN","SampleO","SampleP","SampleQ","SampleR","SampleS","SampleT","WT","WT"
+G,Ctrl1,Ctrl2,Ctrl3,Ctrl4,Ctrl1,Ctrl2,Ctrl3,Ctrl4,Ctrl1,Ctrl2,Ctrl3,Ctrl4
+H,STD,STD,STD,STD,STD,STD,STD,STD,STD,STD,STD,STD
