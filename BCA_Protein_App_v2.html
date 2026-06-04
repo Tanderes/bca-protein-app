@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BCA Protein App</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg:        #0f1117;
+    --surface:   #181c27;
+    --surface2:  #1f2435;
+    --border:    #2a3050;
+    --accent:    #4f8ef7;
+    --accent2:   #3dd6a3;
+    --warn:      #f5a623;
+    --danger:    #e25454;
+    --text:      #e8eaf2;
+    --muted:     #7a82a0;
+    --mono:      'DM Mono', monospace;
+    --sans:      'DM Sans', sans-serif;
+    --radius:    8px;
+    --radius-lg: 14px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .logo-mark {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 500; color: #fff;
+  }
+  .header-meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Layout ── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 36px 24px 80px;
+  }
+
+  /* ── Upload zone ── */
+  .upload-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 640px) { .upload-grid { grid-template-columns: 1fr; } }
+
+  .drop-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    background: var(--surface);
+    position: relative;
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(79,142,247,0.06);
+  }
+  .drop-zone.loaded {
+    border-color: var(--accent2);
+    border-style: solid;
+    background: rgba(61,214,163,0.05);
+  }
+  .drop-zone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .dz-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .dz-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .dz-sub {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+  .dz-filename {
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent2);
+    background: rgba(61,214,163,0.1);
+    padding: 4px 10px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  /* ── Config bar ── */
+  .config-bar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .config-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .config-item label { color: var(--muted); white-space: nowrap; }
+  .config-item input, .config-item select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 5px 10px;
+    width: 80px;
+    outline: none;
+  }
+  .config-item input:focus, .config-item select:focus {
+    border-color: var(--accent);
+  }
+  .config-sep {
+    width: 1px; height: 24px;
+    background: var(--border);
+  }
+
+  /* ── Run button ── */
+  .run-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 10px 24px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    margin-left: auto;
+  }
+  .run-btn:hover { background: #3a7de8; }
+  .run-btn:active { transform: scale(0.98); }
+  .run-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+  /* ── Error/status bar ── */
+  .status-bar {
+    border-radius: var(--radius);
+    padding: 10px 16px;
+    font-size: 13px;
+    margin-bottom: 20px;
+    display: none;
+    font-family: var(--mono);
+  }
+  .status-bar.error { background: rgba(226,84,84,0.1); border: 1px solid rgba(226,84,84,0.3); color: #f07070; display: block; }
+  .status-bar.info  { background: rgba(79,142,247,0.1); border: 1px solid rgba(79,142,247,0.3); color: #7aacf7; display: block; }
+
+  /* ── Results ── */
+  #results { display: none; }
+
+  .section-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    margin-top: 36px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Stat cards ── */
+  .stat-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+  }
+  .stat-card .s-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .stat-card .s-value {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .stat-card .s-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+  .stat-card.good .s-value { color: var(--accent2); }
+  .stat-card.warn .s-value { color: var(--warn); }
+
+  /* ── Charts ── */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 780px) { .charts-grid { grid-template-columns: 1fr; } }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+  }
+  .chart-card h3 {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .chart-card .chart-eq {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .chart-card .chart-r2 {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent2);
+    margin-bottom: 14px;
+  }
+
+  /* ── Summary table ── */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead tr {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 10px 16px;
+    text-align: left;
+    font-weight: 400;
+  }
+  td {
+    padding: 9px 16px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+  }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+  .td-sample {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 13px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: var(--mono);
+    letter-spacing: 0.04em;
+  }
+  .badge-warn { background: rgba(245,166,35,0.15); color: var(--warn); border: 1px solid rgba(245,166,35,0.3); }
+  .badge-ok   { background: rgba(61,214,163,0.1);  color: var(--accent2); border: 1px solid rgba(61,214,163,0.2); }
+
+  /* ── Export bar ── */
+  .export-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 16px;
+    font-family: var(--sans);
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .btn-secondary:hover { border-color: var(--accent); background: rgba(79,142,247,0.07); }
+
+  /* ── Loading spinner ── */
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 20px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 60px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">B</div>
+    BCA Protein App
+  </div>
+  <span class="header-meta">Pierce BCA · Microplate · 526 nm</span>
+</header>
+
+<main>
+
+  <!-- Upload -->
+  <div class="section-title">Input files</div>
+  <div class="upload-grid">
+    <div class="drop-zone" id="dzAbs" ondragover="doDragOver(event,'dzAbs')" ondragleave="doDragLeave('dzAbs')" ondrop="doDrop(event,'abs')">
+      <input type="file" accept=".csv" onchange="handleFile(event,'abs')"/>
+      <span class="dz-icon">📊</span>
+      <div class="dz-label">Absorbance data</div>
+      <div class="dz-sub">plate_reader_output.csv — rows A–H, cols 1–12</div>
+      <div class="dz-filename" id="fnAbs" style="display:none"></div>
+    </div>
+    <div class="drop-zone" id="dzLay" ondragover="doDragOver(event,'dzLay')" ondragleave="doDragLeave('dzLay')" ondrop="doDrop(event,'layout')">
+      <input type="file" accept=".csv" onchange="handleFile(event,'layout')"/>
+      <span class="dz-icon">🗺️</span>
+      <div class="dz-label">Plate layout map</div>
+      <div class="dz-sub">layout.csv — same grid, cell = sample name</div>
+      <div class="dz-filename" id="fnLay" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- Config -->
+  <div class="config-bar">
+    <div class="config-item">
+      <label>Wavelength</label>
+      <input id="cfgWl" type="number" value="526" min="400" max="700"/>
+      <span style="font-size:12px;color:var(--muted)">nm</span>
+    </div>
+    <div class="config-sep"></div>
+    <div class="config-item">
+      <label>Dilution factor</label>
+      <input id="cfgDil" type="number" value="1" min="1" step="1"/>
+      <span style="font-size:12px;color:var(--muted)">×</span>
+    </div>
+    <div class="config-sep"></div>
+    <div class="config-item">
+      <label>Standards in row</label>
+      <select id="cfgStdRow">
+        <option value="H" selected>H (default)</option>
+        <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+        <option value="D">D</option><option value="E">E</option><option value="F">F</option>
+        <option value="G">G</option>
+      </select>
+    </div>
+    <div class="config-sep"></div>
+    <div class="config-item">
+      <label>Std concentrations (µg/mL)</label>
+      <input id="cfgStds" type="text" value="2000,1500,1000,750,500,250,125,25,0" style="width:260px;font-size:11px;"/>
+    </div>
+    <button class="run-btn" id="runBtn" onclick="runAnalysis()" disabled>
+      <span id="runLabel">Run analysis</span>
+    </button>
+  </div>
+
+  <div class="status-bar" id="statusBar"></div>
+
+  <!-- Results -->
+  <div id="results">
+
+    <div class="section-title">Standard curve</div>
+    <div id="stdStats" class="stat-cards"></div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>Standard curve</h3>
+        <div class="chart-eq" id="eqLabel"></div>
+        <div class="chart-r2" id="r2Label"></div>
+        <div style="position:relative;height:240px;">
+          <canvas id="stdChart" role="img" aria-label="BCA standard curve scatter plot with linear fit"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>Protein concentration by sample</h3>
+        <div id="boxChartWrap" style="position:relative;overflow-y:auto;"></div>
+      </div>
+    </div>
+
+    <div class="section-title">Summary table</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Sample</th>
+            <th>N</th>
+            <th>Mean (µg/mL)</th>
+            <th>SD (µg/mL)</th>
+            <th>CV (%)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="summaryBody"></tbody>
+      </table>
+    </div>
+
+    <div class="section-title">Export</div>
+    <div class="export-bar">
+      <button class="btn-secondary" onclick="exportCSV()">⬇ Download CSV</button>
+      <button class="btn-secondary" onclick="exportXLSX()">⬇ Download Excel (.xlsx)</button>
+    </div>
+
+  </div>
+</main>
+
+<footer>BCA Protein App · Pierce BCA Microplate Procedure · Row H standards · Linear regression interpolation</footer>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let absData = null, layoutData = null;
+let summaryResults = [], stdCurveData = {};
+let stdChartInst = null;
+
+// ── File handling ─────────────────────────────────────────────────────────────
+function handleFile(evt, type) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  readCSV(file, type);
+}
+function doDragOver(evt, id) { evt.preventDefault(); document.getElementById(id).classList.add('drag-over'); }
+function doDragLeave(id) { document.getElementById(id).classList.remove('drag-over'); }
+function doDrop(evt, type) {
+  evt.preventDefault();
+  const id = type === 'abs' ? 'dzAbs' : 'dzLay';
+  document.getElementById(id).classList.remove('drag-over');
+  const file = evt.dataTransfer.files[0];
+  if (file) readCSV(file, type);
+}
+
+function readCSV(file, type) {
+  Papa.parse(file, {
+    skipEmptyLines: true,
+    complete: res => {
+      if (type === 'abs') {
+        absData = res.data;
+        document.getElementById('dzAbs').classList.add('loaded');
+        const fn = document.getElementById('fnAbs');
+        fn.textContent = file.name; fn.style.display = 'inline-block';
+      } else {
+        layoutData = res.data;
+        document.getElementById('dzLay').classList.add('loaded');
+        const fn = document.getElementById('fnLay');
+        fn.textContent = file.name; fn.style.display = 'inline-block';
+      }
+      checkReady();
+    },
+    error: () => showStatus(`Failed to parse ${file.name}`, 'error')
+  });
+}
+
+function checkReady() {
+  document.getElementById('runBtn').disabled = !(absData && layoutData);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function showStatus(msg, type) {
+  const el = document.getElementById('statusBar');
+  el.textContent = msg;
+  el.className = 'status-bar ' + type;
+}
+function clearStatus() {
+  const el = document.getElementById('statusBar');
+  el.className = 'status-bar';
+}
+
+function parseGrid(data) {
+  // Returns object: { A: [v1..v12], B: [...], ... }
+  const rows = ['A','B','C','D','E','F','G','H'];
+  const grid = {};
+  data.forEach(row => {
+    const key = (row[0] || '').trim().toUpperCase();
+    if (rows.includes(key)) {
+      grid[key] = row.slice(1).map(v => v.toString().trim());
+    }
+  });
+  return grid;
+}
+
+function linReg(xs, ys) {
+  const n = xs.length;
+  const sumX = xs.reduce((a,b) => a+b, 0);
+  const sumY = ys.reduce((a,b) => a+b, 0);
+  const sumXY = xs.reduce((a,x,i) => a + x*ys[i], 0);
+  const sumX2 = xs.reduce((a,x) => a + x*x, 0);
+  const slope = (n*sumXY - sumX*sumY) / (n*sumX2 - sumX*sumX);
+  const intercept = (sumY - slope*sumX) / n;
+  const yMean = sumY / n;
+  const ssTot = ys.reduce((a,y) => a + (y-yMean)**2, 0);
+  const ssRes = xs.reduce((a,x,i) => a + (ys[i] - (slope*x+intercept))**2, 0);
+  const r2 = 1 - ssRes/ssTot;
+  return { slope, intercept, r2 };
+}
+
+// ── Main analysis ─────────────────────────────────────────────────────────────
+function runAnalysis() {
+  clearStatus();
+  const runBtn = document.getElementById('runBtn');
+  runBtn.disabled = true;
+  document.getElementById('runLabel').innerHTML = '<span class="spinner"></span> Running…';
+
+  setTimeout(() => {
+    try {
+      _doAnalysis();
+    } catch(e) {
+      showStatus('Error: ' + e.message, 'error');
+    }
+    runBtn.disabled = false;
+    document.getElementById('runLabel').textContent = 'Run analysis';
+  }, 80);
+}
+
+function _doAnalysis() {
+  const stdRowKey = document.getElementById('cfgStdRow').value.toUpperCase();
+  const dilution  = parseFloat(document.getElementById('cfgDil').value) || 1;
+  const stdConcs  = document.getElementById('cfgStds').value
+    .split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+
+  const absGrid    = parseGrid(absData);
+  const layoutGrid = parseGrid(layoutData);
+
+  if (!absGrid[stdRowKey]) throw new Error(`Row ${stdRowKey} not found in absorbance file. Check your CSV.`);
+
+  const stdAbsRaw = absGrid[stdRowKey].slice(0, stdConcs.length).map(Number);
+  if (stdAbsRaw.some(isNaN)) throw new Error(`Non-numeric values found in standards row ${stdRowKey}.`);
+
+  // Blank: mean of all wells where concentration == 0
+  const blankAbs = [];
+  stdConcs.forEach((c, i) => { if (c === 0) blankAbs.push(stdAbsRaw[i]); });
+  // Also check cols after the declared standards for additional blank replicates
+  const extraCols = absGrid[stdRowKey].slice(stdConcs.length).map(Number).filter(v => !isNaN(v) && v > 0.01);
+  if (blankAbs.length === 0) throw new Error('No 0 µg/mL standard found. Add a 0 to the concentrations list.');
+  const blank = blankAbs.reduce((a,b)=>a+b,0) / blankAbs.length;
+
+  // Background-correct standards, exclude 0 from fit
+  const stdAbsBg = stdAbsRaw.map(a => a - blank);
+  const fitX = [], fitY = [];
+  stdConcs.forEach((c, i) => {
+    if (c > 0) { fitX.push(stdAbsBg[i]); fitY.push(c); }
+  });
+
+  const reg = linReg(fitX, fitY);
+  const { slope, intercept, r2 } = reg;
+
+  if (r2 < 0.95) showStatus(`⚠ Low R² (${r2.toFixed(4)}) — check your standards before proceeding.`, 'info');
+
+  // Sample wells: all rows except stdRowKey
+  const sampleRows = ['A','B','C','D','E','F','G','H'].filter(r => r !== stdRowKey);
+  const wellResults = [];
+
+  sampleRows.forEach(rowKey => {
+    const absRow    = absGrid[rowKey];
+    const layRow    = layoutGrid[rowKey];
+    if (!absRow || !layRow) return;
+    absRow.forEach((rawVal, ci) => {
+      const sampleName = (layRow[ci] || '').trim();
+      if (!sampleName) return;
+      const absNum = parseFloat(rawVal);
+      if (isNaN(absNum)) return;
+      const bgCorr = absNum - blank;
+      const conc   = (slope * bgCorr + intercept) * dilution;
+      wellResults.push({ well: `${rowKey}${ci+1}`, sample: sampleName, abs: absNum, bgCorr, conc });
+    });
+  });
+
+  if (wellResults.length === 0) throw new Error('No sample wells found. Check layout CSV row/column alignment.');
+
+  // Group by sample
+  const groups = {};
+  wellResults.forEach(w => {
+    if (!groups[w.sample]) groups[w.sample] = [];
+    groups[w.sample].push(w.conc);
+  });
+
+  summaryResults = Object.entries(groups).map(([sample, vals]) => {
+    const n    = vals.length;
+    const mean = vals.reduce((a,b)=>a+b,0) / n;
+    const sd   = n > 1 ? Math.sqrt(vals.reduce((a,v)=>a+(v-mean)**2,0)/(n-1)) : 0;
+    const cv   = mean !== 0 ? (sd/mean*100) : 0;
+    return { sample, n, mean, sd, cv };
+  });
+
+  stdCurveData = { stdConcs, stdAbsBg, fitX, fitY, slope, intercept, r2, blank, wellResults };
+
+  renderResults(dilution);
+}
+
+function renderResults(dilution) {
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  const { slope, intercept, r2, blank, stdConcs, stdAbsBg, fitX, fitY } = stdCurveData;
+  const wl = document.getElementById('cfgWl').value;
+
+  // Stat cards
+  const nFlagged = summaryResults.filter(s => s.cv > 10).length;
+  document.getElementById('stdStats').innerHTML = `
+    <div class="stat-card ${r2 >= 0.99 ? 'good' : r2 >= 0.97 ? '' : 'warn'}">
+      <div class="s-label">R²</div>
+      <div class="s-value">${r2.toFixed(4)}</div>
+      <div class="s-sub">${r2 >= 0.99 ? 'Excellent fit' : r2 >= 0.97 ? 'Good fit' : 'Check standards'}</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">Blank absorbance</div>
+      <div class="s-value">${blank.toFixed(4)}</div>
+      <div class="s-sub">Mean of 0 µg/mL reps</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">Slope</div>
+      <div class="s-value">${slope.toFixed(1)}</div>
+      <div class="s-sub">µg·mL⁻¹ / AU</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">Samples</div>
+      <div class="s-value">${summaryResults.length}</div>
+      <div class="s-sub">${summaryResults.reduce((a,s)=>a+s.n,0)} total wells</div>
+    </div>
+    <div class="stat-card ${nFlagged > 0 ? 'warn' : 'good'}">
+      <div class="s-label">CV > 10%</div>
+      <div class="s-value">${nFlagged}</div>
+      <div class="s-sub">${nFlagged === 0 ? 'All pass' : `${nFlagged} sample${nFlagged>1?'s':''} flagged`}</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">Dilution factor</div>
+      <div class="s-value">${dilution}×</div>
+      <div class="s-sub">Applied to all samples</div>
+    </div>
+  `;
+
+  document.getElementById('eqLabel').textContent = `y = ${slope.toFixed(2)}x + ${intercept.toFixed(2)}`;
+  document.getElementById('r2Label').textContent  = `R² = ${r2.toFixed(4)}`;
+
+  // ── Standard curve chart ──────────────────────────────────────────────────
+  if (stdChartInst) stdChartInst.destroy();
+  const xFit = [Math.min(...fitX)*0.98, Math.max(...fitX)*1.02];
+  stdChartInst = new Chart(document.getElementById('stdChart'), {
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: 'Standards',
+          data: fitX.map((x,i) => ({ x, y: fitY[i] })),
+          backgroundColor: '#4f8ef7',
+          borderColor: '#3a7de8',
+          borderWidth: 1,
+          pointRadius: 6,
+          order: 2
+        },
+        {
+          label: 'Fit',
+          data: xFit.map(x => ({ x, y: slope*x+intercept })),
+          type: 'line',
+          borderColor: '#3dd6a3',
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: false,
+          order: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: c => c.datasetIndex===0 ? `Abs: ${c.parsed.x.toFixed(4)} → ${c.parsed.y} µg/mL` : null } }
+      },
+      scales: {
+        x: { title: { display: true, text: `A${wl} (blank-corrected)`, color: '#7a82a0', font:{size:11} },
+             grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#7a82a0' } },
+        y: { title: { display: true, text: 'BSA (µg/mL)', color: '#7a82a0', font:{size:11} },
+             grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#7a82a0' } }
+      }
+    }
+  });
+
+  // ── Box plot (SVG, per-well data) ─────────────────────────────────────────
+  renderBoxPlot();
+
+  // ── Summary table ─────────────────────────────────────────────────────────
+  const tbody = document.getElementById('summaryBody');
+  tbody.innerHTML = summaryResults.map(s => `
+    <tr>
+      <td class="td-sample">${s.sample}</td>
+      <td>${s.n}</td>
+      <td>${s.mean.toFixed(2)}</td>
+      <td>${s.sd.toFixed(2)}</td>
+      <td>${s.cv.toFixed(1)}</td>
+      <td>${s.cv > 10
+        ? '<span class="badge badge-warn">⚠ CV &gt; 10%</span>'
+        : '<span class="badge badge-ok">✓ Pass</span>'}</td>
+    </tr>`).join('');
+}
+
+// ── Box plot (SVG) ─────────────────────────────────────────────────────────────
+function renderBoxPlot() {
+  // Gather per-well values per sample
+  const groupMap = {};
+  stdCurveData.wellResults.forEach(w => {
+    if (!groupMap[w.sample]) groupMap[w.sample] = [];
+    groupMap[w.sample].push(w.conc);
+  });
+
+  // Sort by median descending
+  const groups = Object.entries(groupMap).map(([sample, vals]) => {
+    const sorted = [...vals].sort((a,b)=>a-b);
+    const n = sorted.length;
+    const q1  = sorted[Math.floor((n-1)*0.25)];
+    const med = n%2===0 ? (sorted[n/2-1]+sorted[n/2])/2 : sorted[(n-1)/2];
+    const q3  = sorted[Math.floor((n-1)*0.75)];
+    const iqr = q3-q1;
+    const lo  = Math.max(sorted[0], q1 - 1.5*iqr);
+    const hi  = Math.min(sorted[n-1], q3 + 1.5*iqr);
+    const mean = vals.reduce((a,b)=>a+b,0)/n;
+    const sd  = n>1 ? Math.sqrt(vals.reduce((a,v)=>a+(v-mean)**2,0)/(n-1)):0;
+    const cv  = mean ? sd/mean*100 : 0;
+    const outliers = sorted.filter(v => v < lo || v > hi);
+    return { sample, vals: sorted, q1, med, q3, lo, hi, mean, sd, cv, outliers };
+  }).sort((a,b) => b.med - a.med);
+
+  const allVals = groups.flatMap(g => g.vals);
+  const xMin = Math.floor(Math.min(...allVals)/50)*50;
+  const xMax = Math.ceil(Math.max(...allVals)/50)*50;
+
+  const rowH  = 34;
+  const padL  = 148; // label area
+  const padR  = 20;
+  const padT  = 32;
+  const padB  = 36;
+  const W     = 520;
+  const plotW = W - padL - padR;
+  const H     = padT + groups.length * rowH + padB;
+
+  const toX = v => padL + ((v - xMin) / (xMax - xMin)) * plotW;
+
+  // Grid lines + x-axis ticks
+  const tickCount = 6;
+  const tickStep  = (xMax - xMin) / (tickCount - 1);
+  let gridLines = '';
+  let xLabels   = '';
+  for (let i = 0; i < tickCount; i++) {
+    const v = xMin + i * tickStep;
+    const x = toX(v);
+    gridLines += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${H-padB}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
+    xLabels   += `<text x="${x}" y="${H-padB+16}" text-anchor="middle" fill="#7a82a0" font-size="10" font-family="DM Mono, monospace">${Math.round(v)}</text>`;
+  }
+
+  // X-axis label
+  const xAxisLabel = `<text x="${padL + plotW/2}" y="${H-2}" text-anchor="middle" fill="#7a82a0" font-size="10" font-family="DM Mono, monospace">Protein (µg/mL)</text>`;
+
+  // Boxes
+  let boxes = '';
+  groups.forEach((g, i) => {
+    const cy   = padT + i * rowH + rowH/2;
+    const boxH = 14;
+    const flagged = g.cv > 10;
+    const boxColor  = flagged ? 'rgba(245,166,35,0.55)' : 'rgba(79,142,247,0.55)';
+    const lineColor = flagged ? '#f5a623' : '#4f8ef7';
+    const medColor  = flagged ? '#f5a623' : '#3dd6a3';
+
+    // Whisker line
+    boxes += `<line x1="${toX(g.lo)}" y1="${cy}" x2="${toX(g.hi)}" y2="${cy}" stroke="${lineColor}" stroke-width="1.5" opacity="0.6"/>`;
+    // Whisker caps
+    boxes += `<line x1="${toX(g.lo)}" y1="${cy-5}" x2="${toX(g.lo)}" y2="${cy+5}" stroke="${lineColor}" stroke-width="1.5"/>`;
+    boxes += `<line x1="${toX(g.hi)}" y1="${cy-5}" x2="${toX(g.hi)}" y2="${cy+5}" stroke="${lineColor}" stroke-width="1.5"/>`;
+    // IQR box
+    boxes += `<rect x="${toX(g.q1)}" y="${cy-boxH/2}" width="${toX(g.q3)-toX(g.q1)}" height="${boxH}" fill="${boxColor}" stroke="${lineColor}" stroke-width="1.5" rx="2"/>`;
+    // Median line
+    boxes += `<line x1="${toX(g.med)}" y1="${cy-boxH/2}" x2="${toX(g.med)}" y2="${cy+boxH/2}" stroke="${medColor}" stroke-width="2"/>`;
+    // Mean diamond
+    const dx = 4;
+    boxes += `<polygon points="${toX(g.mean)},${cy-dx} ${toX(g.mean)+dx},${cy} ${toX(g.mean)},${cy+dx} ${toX(g.mean)-dx},${cy}" fill="none" stroke="${medColor}" stroke-width="1.2" opacity="0.8"/>`;
+    // Outlier dots
+    g.outliers.forEach(ov => {
+      boxes += `<circle cx="${toX(ov)}" cy="${cy}" r="3" fill="none" stroke="${flagged?'#f5a623':'#4f8ef7'}" stroke-width="1.5"/>`;
+    });
+    // Label
+    const labelX = padL - 8;
+    boxes += `<text x="${labelX}" y="${cy+4}" text-anchor="end" fill="${flagged ? '#f5a623' : '#e8eaf2'}" font-size="11" font-family="DM Sans, sans-serif">${g.sample}</text>`;
+
+    // Tooltip rect (invisible, for title)
+    const tip = `n=${g.vals.length} | med=${g.med.toFixed(1)} | Q1=${g.q1.toFixed(1)} Q3=${g.q3.toFixed(1)} | CV=${g.cv.toFixed(1)}%`;
+    boxes += `<rect x="${toX(g.lo)-2}" y="${cy-rowH/2}" width="${toX(g.hi)-toX(g.lo)+4}" height="${rowH}" fill="transparent"><title>${tip}</title></rect>`;
+  });
+
+  // Legend
+  const legY = padT - 14;
+  const legend = `
+    <rect x="${padL}" y="${legY-8}" width="10" height="10" rx="1" fill="rgba(79,142,247,0.55)" stroke="#4f8ef7" stroke-width="1.2"/>
+    <text x="${padL+14}" y="${legY}" fill="#7a82a0" font-size="9" font-family="DM Mono, monospace">IQR box</text>
+    <line x1="${padL+68}" y1="${legY-4}" x2="${padL+80}" y2="${legY-4}" stroke="#3dd6a3" stroke-width="2"/>
+    <text x="${padL+84}" y="${legY}" fill="#7a82a0" font-size="9" font-family="DM Mono, monospace">median</text>
+    <polygon points="${padL+138},${legY-6} ${padL+142},${legY-2} ${padL+138},${legY+2} ${padL+134},${legY-2}" fill="none" stroke="#3dd6a3" stroke-width="1.2"/>
+    <text x="${padL+148}" y="${legY}" fill="#7a82a0" font-size="9" font-family="DM Mono, monospace">mean</text>
+    <rect x="${padL+188}" y="${legY-8}" width="10" height="10" rx="1" fill="rgba(245,166,35,0.55)" stroke="#f5a623" stroke-width="1.2"/>
+    <text x="${padL+202}" y="${legY}" fill="#7a82a0" font-size="9" font-family="DM Mono, monospace">CV &gt; 10%</text>
+  `;
+
+  const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg" style="display:block;">${gridLines}${boxes}${xLabels}${xAxisLabel}${legend}</svg>`;
+
+  const wrap = document.getElementById('boxChartWrap');
+  wrap.style.height = Math.min(H, 520) + 'px';
+  wrap.innerHTML = svg;
+}
+
+// ── Export CSV ────────────────────────────────────────────────────────────────
+function exportCSV() {
+  const rows = [['Sample','N','Mean_ugmL','SD_ugmL','CV_pct']];
+  summaryResults.forEach(s => rows.push([s.sample, s.n, s.mean.toFixed(2), s.sd.toFixed(2), s.cv.toFixed(1)]));
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = `BCA_results_${today()}.csv`;
+  a.click();
+}
+
+// ── Export XLSX ───────────────────────────────────────────────────────────────
+function exportXLSX() {
+  const { slope, intercept, r2, blank, stdConcs, stdAbsBg, wellResults } = stdCurveData;
+  const wl = document.getElementById('cfgWl').value;
+  const wb = XLSX.utils.book_new();
+
+  // ── Summary sheet ── matches reference: title row, blank, header, data
+  const dateStr = today();
+  const expLabel = `BCA Protein Quantification — ${dateStr}`;
+  const stdLine  = `Standard curve: y = ${slope.toFixed(2)}x + ${intercept.toFixed(2)}  |  R² = ${r2.toFixed(4)}  |  Blank = ${blank.toFixed(4)} AU  |  Dilution factor = ${document.getElementById('cfgDil').value} (neat)`;
+  const sumRows = [
+    [expLabel],
+    [stdLine],
+    [],
+    ['Sample', 'N (replicates)', 'Mean [protein] (µg/mL)', 'SD (µg/mL)', 'CV (%)', 'Flag']
+  ];
+  summaryResults.forEach(s => sumRows.push([
+    s.sample, s.n, +s.mean.toFixed(2), +s.sd.toFixed(2), +s.cv.toFixed(1),
+    s.cv > 10 ? '⚠ CV >10%' : ''
+  ]));
+  sumRows.push([], [], ['Protein concentration by sample (box plot)']);
+  const wsSummary = XLSX.utils.aoa_to_sheet(sumRows);
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+  // ── Per-Well Data sheet ── matches reference columns exactly
+  const wellData = [['Well', 'Sample', `Absorbance ${wl}nm`, 'Abs (blank-corrected)', 'Protein (µg/mL)']];
+  wellResults.forEach(w => wellData.push([
+    w.well, w.sample, +w.abs.toFixed(4), +w.bgCorr.toFixed(4), +w.conc.toFixed(2)
+  ]));
+  const wsWells = XLSX.utils.aoa_to_sheet(wellData);
+  XLSX.utils.book_append_sheet(wb, wsWells, 'Per-Well Data');
+
+  // ── Standard Curve sheet ── matches reference layout
+  const stdRows = [
+    ['BCA Standard Curve Data', '', '', '', ''],
+    [],
+    ['Standard ID', 'BSA (µg/mL)', `Absorbance ${wl}nm`, 'Abs (blank-corrected)', 'Fitted Conc (µg/mL)']
+  ];
+  const stdIds = ['A','B','C','D','E','F','G','H','I'];
+  stdConcs.forEach((c, i) => {
+    const absRaw = stdAbsBg[i] + blank;
+    const absBg  = +stdAbsBg[i].toFixed(4);
+    const fitted = c === 0 ? 'n/a (blank)' : +(slope * stdAbsBg[i] + intercept).toFixed(2);
+    stdRows.push([stdIds[i] || String(i+1), c, +absRaw.toFixed(4), absBg, fitted]);
+  });
+  stdRows.push([], [], ['Regression Statistics']);
+  stdRows.push(['Slope (µg·mL⁻¹ / AU)', +slope.toFixed(4)]);
+  stdRows.push(['Intercept (µg/mL)',     +intercept.toFixed(4)]);
+  stdRows.push(['R²',                    +r2.toFixed(5)]);
+  stdRows.push(['Blank absorbance (mean)', +blank.toFixed(4)]);
+  stdRows.push(['Points used', `${stdConcs.filter(c=>c>0).length} (0 µg/mL excluded from fit)`]);
+  stdRows.push([], ['Standard curve plot']);
+  const wsStd = XLSX.utils.aoa_to_sheet(stdRows);
+  XLSX.utils.book_append_sheet(wb, wsStd, 'Standard Curve');
+
+  XLSX.writeFile(wb, `BCA_Analysis_${dateStr}.xlsx`);
+}
+
+function today() {
+  return new Date().toISOString().slice(0,10).replace(/-/g,'');
+}
+</script>
+</body>
+</html>
