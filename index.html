@@ -403,6 +403,216 @@
     color: var(--muted);
     margin-top: 60px;
   }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--accent); }
+
+  /* ── Header links ── */
+  .header-links {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .header-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .header-link:hover {
+    color: var(--text);
+    border-color: var(--border);
+    background: var(--surface);
+  }
+  .header-link svg { flex-shrink: 0; }
+
+  /* ── About panel ── */
+  .about-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .about-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: left;
+    gap: 10px;
+  }
+  .about-toggle:hover { background: rgba(255,255,255,0.02); }
+  .about-toggle-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--muted);
+  }
+  .about-toggle-left span { color: var(--text); }
+  .about-chevron {
+    transition: transform 0.2s;
+    color: var(--muted);
+  }
+  .about-panel.open .about-chevron { transform: rotate(180deg); }
+  .about-body {
+    display: none;
+    padding: 0 24px 24px;
+    border-top: 1px solid var(--border);
+  }
+  .about-panel.open .about-body { display: block; }
+
+  /* ── About content ── */
+  .about-intro {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+    padding: 16px 0 20px;
+    max-width: 760px;
+  }
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 640px) { .about-grid { grid-template-columns: 1fr; } }
+
+  .about-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .about-card-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .about-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .about-card ul li {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    line-height: 1.5;
+  }
+  .about-card ul li::before {
+    content: '→';
+    color: var(--accent2);
+    flex-shrink: 0;
+  }
+  .about-card p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .about-card strong { color: var(--text); }
+
+  /* ── Sample files bar ── */
+  .sample-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 12px 0 4px;
+    border-top: 1px solid var(--border);
+    margin-top: 16px;
+  }
+  .sample-bar-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .sample-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid rgba(79,142,247,0.25);
+    background: rgba(79,142,247,0.06);
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .sample-link:hover {
+    background: rgba(79,142,247,0.12);
+    border-color: rgba(79,142,247,0.5);
+  }
+  .protocol-link {
+    color: var(--accent2);
+    border-color: rgba(61,214,163,0.25);
+    background: rgba(61,214,163,0.05);
+  }
+  .protocol-link:hover {
+    background: rgba(61,214,163,0.10);
+    border-color: rgba(61,214,163,0.5);
+  }
+
+  /* ── How it works steps ── */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .step-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(79,142,247,0.15);
+    border: 1px solid rgba(79,142,247,0.3);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-text {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .step-text strong { color: var(--text); }
 </style>
 </head>
 <body>
@@ -412,10 +622,100 @@
     <div class="logo-mark">B</div>
     BCA Protein App
   </div>
-  <span class="header-meta">Pierce BCA · Microplate · 526 nm</span>
+  <div class="header-links">
+    <a class="header-link" href="https://tanderes.github.io/bca-protein-app/docs/MAN0011430_Pierce_BCA_Assay_UG.pdf" target="_blank" title="Pierce BCA Protocol PDF">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Protocol
+    </a>
+    <a class="header-link" href="https://github.com/tanderes/bca-protein-app" target="_blank" title="View source on GitHub">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+  </div>
 </header>
 
 <main>
+
+  <!-- About / README panel -->
+  <div class="about-panel" id="aboutPanel">
+    <button class="about-toggle" onclick="toggleAbout()">
+      <div class="about-toggle-left">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--accent)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>About this app</span>
+        <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;">— how to use, file format, test data</span>
+      </div>
+      <svg class="about-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+
+    <div class="about-body">
+      <p class="about-intro">
+        A browser-based tool for analysing Pierce BCA microplate protein assays. Upload two CSVs — absorbance readings and a plate layout map — and the app fits a BSA standard curve, interpolates protein concentrations for every sample well, and renders an interactive box plot grouped by strain.
+        No server, no installation, <strong style="color:var(--text)">no data leaves your machine</strong>.
+      </p>
+
+      <div class="about-grid">
+
+        <div class="about-card">
+          <div class="about-card-title">Input file format</div>
+          <ul>
+            <li>Both CSVs must use <strong>rows A–H</strong> in column 1 and <strong>columns 1–12</strong> in the header — standard 96-well grid</li>
+            <li><strong>Absorbance file</strong> — raw plate reader values, one per well</li>
+            <li><strong>Layout file</strong> — sample name per well; standard curve wells labelled <strong>STD</strong></li>
+            <li>Standard curve is read from the row set in <strong>Standards in row</strong> (default: row H, last row)</li>
+            <li>Empty wells can be left blank in the layout file</li>
+          </ul>
+        </div>
+
+        <div class="about-card">
+          <div class="about-card-title">How it works</div>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Blank correction</strong> — mean A₀ subtracted from every well</div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Linear regression</strong> — least-squares fit on blank-corrected standards (0 µg/mL excluded)</div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Interpolation</strong> — conc = slope × (abs − blank) + intercept, × dilution factor</div></div>
+            <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Statistics</strong> — mean, SD, CV per sample across all replicate wells</div></div>
+            <div class="step"><div class="step-num">5</div><div class="step-text"><strong>Box plot</strong> — per-well values, IQR box, median, whiskers, individual dots; parent strain sets dashed reference line</div></div>
+          </div>
+        </div>
+
+        <div class="about-card">
+          <div class="about-card-title">Config settings</div>
+          <ul>
+            <li><strong>Wavelength</strong> — plate reader measurement wavelength (nm). Default 526.</li>
+            <li><strong>Dilution factor</strong> — multiplier applied to all concentrations. Use 1 for undiluted.</li>
+            <li><strong>Standards in row</strong> — which plate row holds BSA standards. Default H.</li>
+            <li><strong>Std concentrations</strong> — comma-separated µg/mL values left-to-right; must include a 0 for blank.</li>
+            <li><strong>Parent strain</strong> — sets the dashed reference line and grey colour group on the box plot.</li>
+          </ul>
+        </div>
+
+        <div class="about-card">
+          <div class="about-card-title">Test data — 20260522 Y293 PDIs</div>
+          <p style="margin-bottom:10px;">BCA assay measuring protein concentration in Y293 yeast strains expressing PDI variants. Standard curve in <strong>row H</strong> (all 12 wells = STD).</p>
+          <ul>
+            <li><strong>Rows A–C</strong> — Y293+EBB769–797 colony 1 (c1) replicates</li>
+            <li><strong>Rows D–F</strong> — Y293+EBB769–797 colony 2 (c2) replicates</li>
+            <li><strong>Row G</strong> — control strains: Y11, Y243, Y310, Y371</li>
+            <li><strong>Row H</strong> — BSA standards: 2000, 1500, 1000, 750, 500, 250, 125, 25, 0 µg/mL</li>
+            <li>Expected output: R² ≥ 0.99, concentrations ~500–700 µg/mL, parent Y293 ~600 µg/mL</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="sample-bar">
+        <span class="sample-bar-label">Sample files &amp; protocol</span>
+        <a class="sample-link" href="https://tanderes.github.io/bca-protein-app/sample-data/20260522_BCA_293PDIs.csv" download>
+          ⬇ 20260522_BCA_293PDIs.csv
+        </a>
+        <a class="sample-link" href="https://tanderes.github.io/bca-protein-app/sample-data/Transformation__Y293___PDIs_-_PC_layout1.csv" download>
+          ⬇ Transformation_Y293_PDIs_layout.csv
+        </a>
+        <a class="sample-link protocol-link" href="https://tanderes.github.io/bca-protein-app/docs/MAN0011430_Pierce_BCA_Assay_UG.pdf" target="_blank">
+          📄 Pierce BCA Protocol (PDF)
+        </a>
+      </div>
+    </div>
+  </div>
 
   <!-- Upload -->
   <div class="section-title">Input files</div>
@@ -523,7 +823,13 @@
   </div>
 </main>
 
-<footer>BCA Protein App · Pierce BCA Microplate Procedure · Row H standards · Linear regression interpolation</footer>
+<footer>
+  BCA Protein App · Pierce BCA Microplate Procedure · Row H standards · Linear regression interpolation
+  &nbsp;·&nbsp;
+  <a href="https://github.com/tanderes/bca-protein-app" target="_blank">GitHub</a>
+  &nbsp;·&nbsp;
+  <a href="https://tanderes.github.io/bca-protein-app/docs/MAN0011430_Pierce_BCA_Assay_UG.pdf" target="_blank">Protocol MAN0011430</a>
+</footer>
 
 <script>
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -1242,6 +1548,10 @@ function renderBoxPlotToCanvas() {
   }
 
   return cv.toDataURL('image/png');
+}
+
+function toggleAbout() {
+  document.getElementById('aboutPanel').classList.toggle('open');
 }
 
 function today() {
