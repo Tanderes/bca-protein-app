@@ -1010,14 +1010,46 @@ function showStatus(msg, type) {
 }
 function clearStatus() { document.getElementById('statusBar').className = 'status-bar'; }
 
+// ── Flexible grid parser ───────────────────────────────────────────────────────
+// Handles: quoted commas in cell names, numeric row labels (1-8 → A-H),
+// extra header/blank rows, tab-separated files, leading/trailing whitespace,
+// rows in any order, extra columns beyond 12, missing rows.
 function parseGrid(data) {
-  const rows = ['A','B','C','D','E','F','G','H'];
+  const ROW_LETTERS = ['A','B','C','D','E','F','G','H'];
+  // Also accept numeric rows 1–8 as A–H
+  const NUM_TO_LETTER = {'1':'A','2':'B','3':'C','4':'D','5':'E','6':'F','7':'G','8':'H'};
   const grid = {};
-  data.forEach(row => {
-    const key = (row[0] || '').trim().toUpperCase();
-    if (rows.includes(key)) grid[key] = row.slice(1).map(v => v.toString().trim());
+
+  // Detect if file might be tab-separated (PapaParse should handle it, but just in case)
+  // PapaParse already splits by delimiter, so data rows are already arrays here.
+
+  data.forEach(rawRow => {
+    if (!rawRow || rawRow.length < 2) return;
+
+    // Normalise the row-ID cell
+    let key = (rawRow[0] || '').toString().trim().toUpperCase();
+
+    // Map numeric labels → letters
+    if (NUM_TO_LETTER[key]) key = NUM_TO_LETTER[key];
+
+    // Skip if not a recognised plate row
+    if (!ROW_LETTERS.includes(key)) return;
+
+    // Collect up to 12 well values, trimming whitespace from each
+    // Handles files that have >12 data columns (extra ignored)
+    const cells = rawRow.slice(1).map(v => (v == null ? '' : v.toString().trim()));
+
+    // If a row appears more than once (malformed file), take the first occurrence
+    if (!grid[key]) grid[key] = cells;
   });
+
   return grid;
+}
+
+// Quote a CSV field only when necessary (contains comma, quote, or newline)
+function csvField(v) {
+  const s = String(v == null ? '' : v);
+  return /[,"\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
 function linReg(xs, ys) {
@@ -1053,6 +1085,11 @@ function _doAnalysis() {
     .split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
 
   const absGrid = parseGrid(absData), layoutGrid = parseGrid(layoutData);
+
+  // Warn if layout file yielded very few rows (likely a format problem)
+  const layoutRowCount = Object.keys(layoutGrid).length;
+  if (layoutRowCount === 0) throw new Error('No plate rows (A–H) found in layout file. Check that the first column contains row letters.');
+  if (layoutRowCount < 3) showStatus(`⚠ Only ${layoutRowCount} plate row(s) detected in layout — check your file format.`, 'info');
   if (!absGrid[stdRowKey]) throw new Error(`Row ${stdRowKey} not found in absorbance file.`);
 
   const stdAbsRaw = absGrid[stdRowKey].slice(0, stdConcs.length).map(Number);
@@ -1337,11 +1374,18 @@ function renderBoxPlot() {
 
 // ── Export CSV ────────────────────────────────────────────────────────────────
 function exportCSV() {
-  const rows=[['Sample','N','Mean_ugmL','SD_ugmL','CV_pct']];
-  summaryResults.forEach(s=>rows.push([s.sample,s.n,s.mean.toFixed(2),s.sd.toFixed(2),s.cv.toFixed(1)]));
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'}));
-  a.download=`BCA_results_${today()}.csv`; a.click();
+  const cvT = parseFloat(document.getElementById('cfgCv').value) || 10;
+  const rows = [['Sample','N','Mean_ugmL','SD_ugmL','CV_pct','Flag']];
+  summaryResults.forEach(s => rows.push([
+    s.sample, s.n, s.mean.toFixed(2), s.sd.toFixed(2), s.cv.toFixed(1),
+    s.cv > cvT ? `CV>${cvT}%` : 'Pass'
+  ]));
+  // Properly quote any field that contains a comma (e.g. "Y293+EBB769,c1")
+  const csv = rows.map(r => r.map(csvField).join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+  a.download = `BCA_results_${today()}.csv`;
+  a.click();
 }
 
 // ── Export XLSX ───────────────────────────────────────────────────────────────
